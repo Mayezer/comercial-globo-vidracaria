@@ -1,0 +1,100 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "comercial-globo-vidracaria-e-construcao",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-08-28",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": false,
+  "routes": [
+    {
+      "pattern": "comercial-globo-vidracaria-e-construcao.mayezer.com",
+      "custom_domain": true
+    }
+  ],
+  "containers": [
+    {
+      "class_name": "DjangoContainer",
+      "image": "./Dockerfile",
+      "instance_type": "basic",
+      "max_instances": 1
+    }
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "DJANGO_CONTAINER",
+        "class_name": "DjangoContainer"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["DjangoContainer"]
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "MEDIA_BUCKET"
+    }
+  ],
+  "ratelimits": [
+    {
+      "name": "AUTH_RATE_LIMITER",
+      "namespace_id": "21082301",
+      "simple": {
+        "limit": 20,
+        "period": 60
+      }
+    },
+    {
+      "name": "EMAIL_RATE_LIMITER",
+      "namespace_id": "21082302",
+      "simple": {
+        "limit": 3,
+        "period": 60
+      }
+    }
+  ],
+  "vars": {
+    "DEFAULT_FROM_EMAIL": "nao-responda@comercial-globo-vidracaria-e-construcao.mayezer.com",
+    "DJANGO_ALLOWED_HOSTS": "comercial-globo-vidracaria-e-construcao.mayezer.com",
+    "DJANGO_CSRF_TRUSTED_ORIGINS": "https://comercial-globo-vidracaria-e-construcao.mayezer.com",
+    "DJANGO_DEBUG": "False",
+    "DJANGO_SECURE_SSL_REDIRECT": "True",
+    "DJANGO_SECURE_HSTS_SECONDS": "31536000",
+    "FIELD_ENCRYPTION_ACTIVE_KEY": "v1",
+    "PUBLIC_SITE_URL": "https://comercial-globo-vidracaria-e-construcao.mayezer.com",
+    "CORS_ALLOWED_ORIGINS": "",
+    "EMAIL_BACKEND": "django.core.mail.backends.smtp.EmailBackend",
+    "EMAIL_DELIVERY_ENABLED": "True",
+    "EMAIL_HOST": "smtp.resend.com",
+    "EMAIL_HOST_USER": "resend",
+    "EMAIL_PORT": "587",
+    "EMAIL_TIMEOUT": "10",
+    "EMAIL_USE_TLS": "True",
+    "MEDIA_STORAGE_ENDPOINT": "http://media.internal",
+    "POSTGRES_CONN_MAX_AGE": "60"
+  },
+  "secrets": {
+    "required": [
+      "DATABASE_URL",
+      "DJANGO_SECRET_KEY",
+      "RESEND_API_KEY",
+      "FIELD_ENCRYPTION_KEYS",
+      "FIELD_HASH_KEY"
+    ]
+  },
+  "observability": {
+    "enabled": true,
+    "logs": {
+      "enabled": true,
+      "head_sampling_rate": 1,
+      "invocation_logs": false
+    },
+    "traces": {
+      "enabled": true,
+      "head_sampling_rate": 0.1
+    }
+  }
+}

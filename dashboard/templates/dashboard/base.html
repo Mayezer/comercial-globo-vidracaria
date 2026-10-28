@@ -1,0 +1,442 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block body_class %}dashboard-body{% endblock %}
+
+{% block extra_head %}
+{{ block.super }}
+<style>
+    .dashboard-body { --admin-topbar: 72px; }
+    .admin-topbar {
+        position: sticky;
+        top: 0;
+        z-index: 45;
+        min-height: var(--admin-topbar);
+        display: flex;
+        align-items: center;
+        gap: .85rem;
+        padding: .7rem clamp(.8rem, 3vw, 1.5rem);
+        color: #fff;
+        background: linear-gradient(110deg, #053d24, #08783e);
+        box-shadow: 0 6px 20px rgba(5, 61, 36, .2);
+    }
+    .admin-menu-button {
+        width: 46px;
+        height: 46px;
+        display: grid;
+        place-items: center;
+        flex: 0 0 auto;
+        padding: 0;
+        color: #fff;
+        background: rgba(255, 255, 255, .1);
+        border: 1px solid rgba(255, 255, 255, .24);
+        border-radius: .8rem;
+        cursor: pointer;
+        font-size: 1.45rem;
+    }
+    .admin-menu-button:hover { background: rgba(255, 255, 255, .2); }
+    .admin-brand { display: flex; align-items: center; gap: .65rem; color: #fff; text-decoration: none; font-weight: 850; }
+    .admin-brand img { width: 58px; height: 40px; object-fit: cover; background: #fff; border-radius: .5rem; }
+    .admin-brand small { display: block; opacity: .72; font-size: .68rem; letter-spacing: .12em; text-transform: uppercase; }
+    .admin-user { margin-left: auto; display: flex; align-items: center; gap: .7rem; }
+    .admin-user-copy { text-align: right; line-height: 1.15; }
+    .admin-user-copy small { display: block; opacity: .72; }
+    .admin-logout { min-height: 42px; padding: .55rem .8rem; color: #fff; background: transparent; border: 1px solid rgba(255,255,255,.35); border-radius: .7rem; cursor: pointer; font-weight: 750; }
+    .admin-sidebar {
+        position: fixed;
+        inset: 0 auto 0 0;
+        z-index: 60;
+        width: min(310px, 86vw);
+        display: flex;
+        flex-direction: column;
+        padding: 1rem;
+        color: #fff;
+        background: #071f14;
+        box-shadow: 18px 0 45px rgba(0, 0, 0, .28);
+        overflow-y: auto;
+        transform: translateX(-105%);
+        transition: transform .25s ease;
+    }
+    .admin-sidebar.open { transform: translateX(0); }
+    .sidebar-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .4rem .35rem 1.25rem; }
+    .sidebar-head strong { display: flex; align-items: center; gap: .55rem; font-size: 1.05rem; }
+    .sidebar-close { width: 40px; height: 40px; padding: 0; color: #fff; background: rgba(255,255,255,.08); border: 0; border-radius: .65rem; cursor: pointer; font-size: 1.3rem; }
+    .sidebar-nav { display: grid; gap: .35rem; }
+    .sidebar-link { display: flex; align-items: center; gap: .8rem; min-height: 50px; padding: .72rem .85rem; color: rgba(255,255,255,.78); border-radius: .75rem; text-decoration: none; font-weight: 750; }
+    .sidebar-link i { width: 1.35rem; color: #5fe29a; font-size: 1.15rem; text-align: center; }
+    .sidebar-link:hover, .sidebar-link.active { color: #fff; background: rgba(95, 226, 154, .13); }
+    .sidebar-link.active { box-shadow: inset 3px 0 #ffcc29; }
+    .sidebar-group { border: 1px solid transparent; border-radius: .85rem; }
+    .sidebar-group[open] { background: rgba(255,255,255,.045); border-color: rgba(255,255,255,.08); }
+    .sidebar-group-summary {
+        min-height: 50px;
+        display: flex;
+        align-items: center;
+        gap: .8rem;
+        padding: .72rem .85rem;
+        color: rgba(255,255,255,.78);
+        border-radius: .75rem;
+        cursor: pointer;
+        font-weight: 800;
+        list-style: none;
+    }
+    .sidebar-group-summary::-webkit-details-marker { display: none; }
+    .sidebar-group-summary:hover, .sidebar-group-summary:focus-visible { color: #fff; background: rgba(95, 226, 154, .09); }
+    .sidebar-group-summary:focus-visible { outline: 2px solid #ffcc29; outline-offset: -2px; }
+    .sidebar-group-summary > i:first-child { width: 1.35rem; color: #5fe29a; font-size: 1.15rem; text-align: center; }
+    .sidebar-group-chevron { margin-left: auto; color: rgba(255,255,255,.58); font-size: .85rem; transition: transform .2s ease; }
+    .sidebar-group[open] .sidebar-group-chevron { transform: rotate(180deg); }
+    .sidebar-group-links { display: grid; gap: .2rem; padding: 0 .35rem .45rem; }
+    .sidebar-group-links .sidebar-link { min-height: 44px; padding: .58rem .7rem; font-size: .92rem; font-weight: 680; }
+    .sidebar-group-links .sidebar-link i { font-size: 1rem; }
+    .sidebar-group-links .sidebar-link.active { box-shadow: inset 3px 0 #f7c600; }
+    .sidebar-bottom { margin-top: auto; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,.12); }
+    .admin-overlay { position: fixed; inset: 0; z-index: 55; background: rgba(0,0,0,.52); opacity: 0; visibility: hidden; transition: .2s ease; }
+    .admin-overlay.visible { opacity: 1; visibility: visible; }
+    .dashboard-body .site-main { width: min(100% - 2rem, 1280px); padding-block: clamp(1.5rem, 4vw, 3rem); }
+    .dashboard-heading { display: flex; align-items: end; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem; }
+    .dashboard-heading h1 { margin: 0; font-size: clamp(1.8rem, 4vw, 2.7rem); letter-spacing: -.04em; }
+    .dashboard-heading p { margin: .45rem 0 0; color: var(--muted); }
+    .stat-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+    .stat-card { padding: 1.15rem; background: var(--surface); border: 1px solid var(--border); border-radius: 1rem; box-shadow: var(--shadow-sm); }
+    .stat-card > div { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
+    .stat-card i { width: 42px; height: 42px; display: grid; place-items: center; color: var(--brand); background: var(--brand-soft); border-radius: .75rem; font-size: 1.2rem; }
+    .stat-card strong { display: block; margin-top: .75rem; font-size: 1.8rem; }
+    .stat-card span { color: var(--muted); font-size: .82rem; font-weight: 700; }
+    .admin-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 1rem; box-shadow: var(--shadow-sm); overflow: hidden; }
+    .admin-panel-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem 1.15rem; border-bottom: 1px solid var(--border); }
+    .admin-panel-head h2 { margin: 0; font-size: 1.1rem; }
+    .admin-table-wrap { overflow-x: auto; }
+    .admin-table { width: 100%; border-collapse: collapse; }
+    .admin-table th, .admin-table td { padding: .9rem 1rem; border-bottom: 1px solid var(--border); text-align: left; vertical-align: middle; }
+    .admin-table th { color: var(--muted); background: var(--surface-soft); font-size: .72rem; letter-spacing: .07em; text-transform: uppercase; white-space: nowrap; }
+    .admin-table tr:last-child td { border-bottom: 0; }
+    .admin-table a { font-weight: 750; }
+    .table-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .45rem; }
+    .table-actions form { margin: 0; }
+    .section-gap { margin-top: 1.5rem; }
+    .split-panel { display: grid; grid-template-columns: minmax(260px, .8fr) minmax(0, 1.6fr); gap: 1.5rem; padding: 1.15rem; }
+    .compact-form { display: grid; align-content: start; gap: .8rem; }
+    .category-list { display: flex; flex-wrap: wrap; align-content: start; gap: .65rem; }
+    .category-chip { display: inline-flex; align-items: center; gap: .4rem; padding: .55rem .75rem; color: var(--ink); background: var(--surface-soft); border: 1px solid var(--border); border-radius: 999px; font-weight: 750; }
+    .category-chip i { color: var(--brand); }
+    .category-chip small { color: var(--muted); font-weight: 650; }
+    .muted-copy { color: var(--muted); }
+    .status-badge { display: inline-flex; align-items: center; gap: .35rem; padding: .35rem .6rem; border-radius: 999px; font-size: .76rem; font-weight: 850; white-space: nowrap; }
+    .status-pending { color: #8a6200; background: #fff2c2; }
+    .status-completed { color: #08643a; background: #dff7e9; }
+    .status-cancelled { color: #a32632; background: #ffe2e5; }
+    [data-theme="dark"] .status-pending { color: #ffd760; background: #3c3213; }
+    [data-theme="dark"] .status-completed { color: #5fe29a; background: #123426; }
+    [data-theme="dark"] .status-cancelled { color: #ff9aa2; background: #381b22; }
+    .admin-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+    .admin-form .form-field.full, .admin-form .form-field:has(textarea), .admin-form .form-field:has(input[type="file"]) { grid-column: 1 / -1; }
+    .admin-form .form-field input:not([type="checkbox"]):not([type="radio"]), .admin-form .form-field select, .admin-form .form-field textarea { width: 100%; min-height: 48px; padding: .72rem .85rem; color: var(--ink); background: var(--surface); border: 1.5px solid var(--border); border-radius: .72rem; }
+    .admin-form-card { width: min(100%, 900px); margin-inline: auto; }
+    .admin-form-card .card-body { padding: clamp(1.2rem, 4vw, 2.2rem); }
+    .empty-state { padding: 3rem 1.25rem; color: var(--muted); text-align: center; }
+    .empty-state i { display: block; margin-bottom: .7rem; color: var(--brand); font-size: 2.5rem; }
+    .admin-filter { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 1.1rem; }
+    .filter-link { padding: .5rem .75rem; color: var(--muted); background: var(--surface); border: 1px solid var(--border); border-radius: 999px; text-decoration: none; font-size: .82rem; font-weight: 750; }
+    .filter-link.active, .filter-link:hover { color: #fff; background: var(--brand); border-color: var(--brand); }
+    .search-form { display: flex; gap: .55rem; width: min(100%, 520px); }
+    .search-form input { width: 100%; min-height: 44px; padding: .65rem .8rem; color: var(--ink); background: var(--surface); border: 1px solid var(--border); border-radius: .7rem; }
+    .date-filter { display: flex; align-items: end; gap: .7rem; margin-bottom: 1rem; padding: 1rem; background: var(--surface); border: 1px solid var(--border); border-radius: 1rem; box-shadow: var(--shadow-sm); }
+    .date-filter .form-field { width: min(100%, 280px); }
+    .date-filter input, .date-filter select { width: 100%; min-height: 46px; padding: .65rem .8rem; color: var(--ink); background: var(--surface); border: 1px solid var(--border); border-radius: .7rem; }
+    .finance-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; margin-bottom: 1rem; }
+    .finance-card { padding: 1.15rem; background: var(--surface); border: 1px solid var(--border); border-top: 4px solid var(--brand); border-radius: 1rem; box-shadow: var(--shadow-sm); }
+    .finance-card.expense { border-top-color: var(--danger); }
+    .finance-card.balance { border-top-color: var(--accent); }
+    .finance-card span { display: block; color: var(--muted); font-size: .82rem; font-weight: 750; }
+    .finance-card strong { display: block; margin-top: .35rem; font-size: clamp(1.3rem, 3vw, 1.9rem); }
+    .transaction-kind { display: inline-flex; padding: .32rem .58rem; border-radius: 999px; font-size: .76rem; font-weight: 850; }
+    .transaction-kind.income { color: var(--success); background: var(--success-soft); }
+    .transaction-kind.expense { color: var(--danger); background: var(--danger-soft); }
+    .money-cell { font-weight: 850; white-space: nowrap; }
+    .money-cell.income { color: var(--success); }
+    .money-cell.expense { color: var(--danger); }
+    .employee-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; padding: 1rem; }
+    .employee-card { display: grid; grid-template-columns: 82px minmax(0, 1fr); gap: 1rem; align-items: center; padding: 1rem; background: var(--surface-soft); border: 1px solid var(--border); border-radius: .9rem; }
+    .employee-card > img, .employee-avatar { width: 82px; height: 82px; object-fit: cover; border-radius: 50%; }
+    .employee-avatar { display: grid; place-items: center; color: var(--brand); background: var(--brand-soft); font-size: 2rem; }
+    .employee-copy h2 { margin: 0; font-size: 1.05rem; }
+    .employee-copy p { margin: .25rem 0; color: var(--muted); }
+    .employee-copy strong small { color: var(--muted); font-weight: 650; }
+    .employee-card .table-actions { grid-column: 1 / -1; padding-top: .8rem; border-top: 1px solid var(--border); }
+    .profit-layout { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(280px, .85fr); gap: 1.25rem; }
+    .profit-card { padding: clamp(1.25rem, 4vw, 2rem); }
+    .profit-range {
+        --range-progress: 30%;
+        width: 100%;
+        height: 8px;
+        margin: .45rem 0;
+        appearance: none;
+        -webkit-appearance: none;
+        background-color: var(--border);
+        background-image: linear-gradient(
+            to right,
+            var(--brand) 0%,
+            var(--brand) var(--range-progress),
+            var(--border) var(--range-progress),
+            var(--border) 100%
+        );
+        border: 0;
+        border-radius: 999px;
+        cursor: pointer;
+    }
+    .profit-range::-webkit-slider-runnable-track { height: 8px; background: transparent; border-radius: 999px; }
+    .profit-range::-webkit-slider-thumb {
+        width: 20px;
+        height: 20px;
+        margin-top: -6px;
+        appearance: none;
+        -webkit-appearance: none;
+        background: var(--brand);
+        border: 3px solid var(--surface);
+        border-radius: 50%;
+        box-shadow: 0 2px 7px rgba(0, 0, 0, .24);
+    }
+    .profit-range::-moz-range-track { height: 8px; background: transparent; border: 0; border-radius: 999px; }
+    .profit-range::-moz-range-progress { height: 8px; background: transparent; }
+    .profit-range::-moz-range-thumb {
+        width: 14px;
+        height: 14px;
+        background: var(--brand);
+        border: 3px solid var(--surface);
+        border-radius: 50%;
+        box-shadow: 0 2px 7px rgba(0, 0, 0, .24);
+    }
+    .profit-range-row { display: flex; align-items: center; gap: 1rem; }
+    .profit-percentage { min-width: 86px; padding: .55rem .7rem; color: var(--brand); background: var(--brand-soft); border-radius: .65rem; text-align: center; font-size: 1.15rem; font-weight: 900; }
+    .profit-result { display: grid; align-content: center; gap: .7rem; min-height: 250px; padding: 1.5rem; color: #fff; background: linear-gradient(135deg, var(--brand-strong), var(--brand)); border-radius: 1rem; box-shadow: var(--shadow-lg); }
+    .profit-result span { opacity: .82; font-weight: 700; }
+    .profit-result strong { font-size: clamp(2rem, 6vw, 3.3rem); line-height: 1; }
+    .profit-result small { padding-top: .7rem; border-top: 1px solid rgba(255,255,255,.25); font-size: .9rem; }
+    .management-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; }
+    .management-card { padding: 1rem; background: var(--surface); border: 1px solid var(--border); border-radius: .9rem; box-shadow: var(--shadow-sm); }
+    .management-card h2, .management-card h3 { margin: 0; font-size: 1.05rem; }
+    .management-card p { margin: .35rem 0; color: var(--muted); }
+    .management-card .table-actions { margin-top: .85rem; padding-top: .85rem; border-top: 1px solid var(--border); }
+    .linked-note { display: flex; align-items: flex-start; gap: .65rem; margin-bottom: 1rem; padding: .85rem 1rem; color: var(--brand); background: var(--brand-soft); border: 1px solid color-mix(in srgb, var(--brand) 28%, transparent); border-radius: .8rem; }
+    .linked-note p { margin: 0; }
+    .status-active { color: var(--success); background: var(--success-soft); }
+    .status-inactive { color: var(--muted); background: var(--surface-soft); }
+    .notification-dialog { width: min(100% - 2rem, 520px); }
+    .notification-icon { width: 82px; height: 82px; display: grid; place-items: center; margin: 0 auto 1rem; color: var(--brand); background: var(--brand-soft); border-radius: 50%; font-size: 2.2rem; }
+    .notification-dialog h2 { margin: 0; }
+    .notification-dialog p { color: var(--muted); }
+    .pagination { display: flex; justify-content: center; gap: .4rem; margin-top: 1.2rem; }
+    .pagination a, .pagination span { min-width: 40px; min-height: 40px; display: grid; place-items: center; padding: .45rem; color: var(--ink); background: var(--surface); border: 1px solid var(--border); border-radius: .65rem; text-decoration: none; }
+    .pagination .current { color: #fff; background: var(--brand); border-color: var(--brand); }
+    .sales-layout { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(280px, .65fr); gap: 1.2rem; align-items: start; }
+    .sales-stack { display: grid; gap: 1.2rem; }
+    .sale-section { padding: 1.2rem; }
+    .sale-section + .sale-section { border-top: 1px solid var(--border); }
+    .sale-section h2, .item-form-card h2 { margin: 0; color: var(--brand); font-size: 1.05rem; }
+    .sale-section-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
+    .sale-section-head p { margin: .25rem 0 0; color: var(--muted); font-size: .85rem; }
+    .customer-fields[hidden] { display: none; }
+    .sale-summary { display: grid; gap: .7rem; margin: 0; }
+    .sale-summary div { display: flex; justify-content: space-between; gap: 1rem; }
+    .sale-summary dt { color: var(--muted); }
+    .sale-summary dd { margin: 0; font-weight: 800; }
+    .sale-summary .grand-total { padding-top: .75rem; border-top: 1px solid var(--border); color: var(--brand); font-size: 1.1rem; }
+    .sale-item-list { display: grid; gap: .75rem; margin: 0; padding: 0; list-style: none; }
+    .sale-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .8rem; align-items: center; padding: .9rem; background: var(--surface-soft); border: 1px solid var(--border); border-radius: .8rem; }
+    .sale-item strong, .sale-item small { display: block; }
+    .sale-item small { margin-top: .2rem; color: var(--muted); }
+    .sale-item-value { min-width: 110px; text-align: right; }
+    .sale-item-value form { margin-top: .35rem; }
+    .item-forms { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+    .item-form-card { padding: 1rem; background: var(--surface); border: 1px solid var(--border); border-radius: .9rem; }
+    .item-form-card > p { min-height: 2.6em; color: var(--muted); font-size: .82rem; }
+    .compact-form { display: grid; gap: .75rem; }
+    .compact-form .form-field { min-width: 0; }
+    .area-preview { padding: .75rem; color: var(--brand); background: var(--brand-soft); border-radius: .7rem; font-weight: 800; }
+    .sale-filter { display: grid; grid-template-columns: minmax(180px, 1.4fr) repeat(3, minmax(150px, .7fr)) auto; gap: .75rem; align-items: end; margin-bottom: 1rem; }
+    .sale-filter .form-field { margin: 0; }
+    .sale-status { display: inline-flex; align-items: center; padding: .3rem .55rem; border-radius: 999px; font-size: .75rem; font-weight: 850; }
+    .sale-status.draft { color: #725500; background: #fff0b8; }
+    .sale-status.completed { color: #086437; background: #d9f7e7; }
+    .sale-status.cancelled { color: #a51f2f; background: #fde1e5; }
+    .sale-data-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+    .sale-data-item.full { grid-column: 1 / -1; }
+    .sale-data-item span { display: block; margin-bottom: .2rem; color: var(--muted); font-size: .7rem; font-weight: 850; letter-spacing: .06em; text-transform: uppercase; }
+    .sale-timeline { display: grid; gap: .7rem; margin: 0; padding: 0; list-style: none; }
+    .sale-timeline li { padding-left: .8rem; border-left: 3px solid var(--brand); }
+    .sale-timeline small { display: block; color: var(--muted); }
+    .warning-panel { padding: 1rem; color: #6c4d00; background: #fff5cf; border: 1px solid #f0d66c; border-radius: .8rem; }
+    @media (max-width: 1050px) { .item-forms { grid-template-columns: 1fr; } .item-form-card > p { min-height: 0; } }
+    @media (max-width: 900px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } .split-panel, .profit-layout { grid-template-columns: 1fr; } }
+    @media (max-width: 900px) { .sales-layout { grid-template-columns: 1fr; } .sale-filter { grid-template-columns: repeat(2, minmax(0, 1fr)); } .sale-filter .button { width: 100%; } }
+    @media (max-width: 680px) {
+        .admin-user-copy, .admin-brand span { display: none; }
+        .dashboard-heading { align-items: flex-start; flex-direction: column; }
+        .dashboard-heading .button { width: 100%; }
+        .admin-form { grid-template-columns: 1fr; }
+        .admin-form .form-field.full, .admin-form .form-field:has(textarea), .admin-form .form-field:has(input[type="file"]) { grid-column: auto; }
+        .finance-summary { grid-template-columns: 1fr; }
+        .date-filter { align-items: stretch; flex-direction: column; }
+        .date-filter .form-field { width: 100%; }
+    }
+    @media (max-width: 620px) { .sale-filter, .sale-data-grid { grid-template-columns: 1fr; } .sale-data-item.full { grid-column: auto; } .sale-item { grid-template-columns: 1fr; } .sale-item-value { text-align: left; } }
+    @media (max-width: 440px) { .stat-grid { grid-template-columns: 1fr; } }
+</style>
+{% endblock %}
+
+{% block site_header %}
+<header class="admin-topbar">
+    <button class="admin-menu-button" type="button" data-sidebar-open aria-label="Abrir menu administrativo" aria-controls="admin-sidebar" aria-expanded="false">
+        <i class="bi bi-list" aria-hidden="true"></i>
+    </button>
+    <a class="admin-brand" href="{% url 'dashboard:home' %}">
+        <img src="{% static 'img/logo_globo.jpeg' %}" alt="">
+        <span>Painel Globo <small>Área administrativa</small></span>
+    </a>
+    <div class="admin-user">
+        <div class="admin-user-copy"><strong>{{ user.get_full_name|default:user.username }}</strong><small>Administrador</small></div>
+        <form method="post" action="{% url 'accounts:logout' %}">
+            {% csrf_token %}
+            <button class="admin-logout" type="submit"><i class="bi bi-box-arrow-right" aria-hidden="true"></i> <span class="nav-label">Sair</span></button>
+        </form>
+    </div>
+</header>
+
+<aside class="admin-sidebar" id="admin-sidebar" aria-label="Menu administrativo" aria-hidden="true">
+    <div class="sidebar-head">
+        <strong><i class="bi bi-shield-check" aria-hidden="true"></i> Administração</strong>
+        <button class="sidebar-close" type="button" data-sidebar-close aria-label="Fechar menu"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+    </div>
+    <nav class="sidebar-nav">
+        <a class="sidebar-link{% if request.resolver_match.namespace == 'dashboard' and request.resolver_match.url_name == 'home' %} active{% endif %}" href="{% url 'dashboard:home' %}"><i class="bi bi-speedometer2"></i> Visão geral</a>
+
+        <details class="sidebar-group{% if 'quote' in request.resolver_match.url_name or 'customer' in request.resolver_match.url_name or request.resolver_match.namespace == 'sales' %} active{% endif %}"{% if 'quote' in request.resolver_match.url_name or 'customer' in request.resolver_match.url_name or request.resolver_match.namespace == 'sales' %} open{% endif %}>
+            <summary class="sidebar-group-summary"><i class="bi bi-chat-square-text"></i> Atendimento <i class="bi bi-chevron-down sidebar-group-chevron" aria-hidden="true"></i></summary>
+            <div class="sidebar-group-links">
+                <a class="sidebar-link{% if 'quote' in request.resolver_match.url_name %} active{% endif %}" href="{% url 'dashboard:quote_list' %}"><i class="bi bi-file-earmark-text"></i> Orçamentos</a>
+                <a class="sidebar-link{% if 'customer' in request.resolver_match.url_name %} active{% endif %}" href="{% url 'dashboard:customer_list' %}"><i class="bi bi-people"></i> Clientes</a>
+                <a class="sidebar-link{% if request.resolver_match.namespace == 'sales' %} active{% endif %}" href="{% url 'sales:list' %}"><i class="bi bi-cart-check"></i> Vendas</a>
+            </div>
+        </details>
+
+        <details class="sidebar-group{% if 'product' in request.resolver_match.url_name or 'service' in request.resolver_match.url_name or 'supplier' in request.resolver_match.url_name or request.resolver_match.namespace == 'calculator' %} active{% endif %}"{% if 'product' in request.resolver_match.url_name or 'service' in request.resolver_match.url_name or 'supplier' in request.resolver_match.url_name or request.resolver_match.namespace == 'calculator' %} open{% endif %}>
+            <summary class="sidebar-group-summary"><i class="bi bi-boxes"></i> Catálogo e estoque <i class="bi bi-chevron-down sidebar-group-chevron" aria-hidden="true"></i></summary>
+            <div class="sidebar-group-links">
+                <a class="sidebar-link{% if 'product' in request.resolver_match.url_name and request.resolver_match.url_name != 'product_stock_exit' %} active{% endif %}" href="{% url 'dashboard:product_list' %}"><i class="bi bi-box-seam"></i> Produtos</a>
+                <a class="sidebar-link{% if request.resolver_match.url_name == 'product_stock_exit' %} active{% endif %}" href="{% url 'dashboard:product_stock_exit' %}"><i class="bi bi-box-arrow-up-right"></i> Saída de produtos</a>
+                <a class="sidebar-link{% if 'service' in request.resolver_match.url_name %} active{% endif %}" href="{% url 'dashboard:service_list' %}"><i class="bi bi-tools"></i> Serviços</a>
+                <a class="sidebar-link{% if 'supplier' in request.resolver_match.url_name %} active{% endif %}" href="{% url 'dashboard:supplier_list' %}"><i class="bi bi-truck"></i> Fornecedores</a>
+                <a class="sidebar-link{% if request.resolver_match.namespace == 'calculator' %} active{% endif %}" href="{% url 'calculator:home' %}"><i class="bi bi-calculator"></i> Calculadora</a>
+            </div>
+        </details>
+
+        <details class="sidebar-group{% if request.resolver_match.url_name == 'profit_calculator' or 'cash' in request.resolver_match.url_name or 'monthly_finance' in request.resolver_match.url_name or 'expense' in request.resolver_match.url_name or 'payroll' in request.resolver_match.url_name %} active{% endif %}"{% if request.resolver_match.url_name == 'profit_calculator' or 'cash' in request.resolver_match.url_name or 'monthly_finance' in request.resolver_match.url_name or 'expense' in request.resolver_match.url_name or 'payroll' in request.resolver_match.url_name %} open{% endif %}>
+            <summary class="sidebar-group-summary"><i class="bi bi-graph-up-arrow"></i> Financeiro <i class="bi bi-chevron-down sidebar-group-chevron" aria-hidden="true"></i></summary>
+            <div class="sidebar-group-links">
+                <a class="sidebar-link{% if 'cash' in request.resolver_match.url_name %} active{% endif %}" href="{% url 'dashboard:cash_daily' %}"><i class="bi bi-cash-stack"></i> Caixa diário</a>
+                <a class="sidebar-link{% if 'monthly_finance' in request.resolver_match.url_name %} active{% endif %}" href="{% url 'dashboard:monthly_finance' %}"><i class="bi bi-bar-chart-line"></i> Faturamento mensal</a>
+                <a class="sidebar-link{% if 'expense' in request.resolver_match.url_name %} active{% endif %}" href="{% url 'dashboard:expense_list' %}"><i class="bi bi-receipt-cutoff"></i> Gestão de gastos</a>
+                <a class="sidebar-link{% if 'payroll' in request.resolver_match.url_name %} active{% endif %}" href="{% url 'dashboard:payroll_list' %}"><i class="bi bi-file-earmark-person"></i> Folhas de pagamento</a>
+                <a class="sidebar-link{% if request.resolver_match.url_name == 'profit_calculator' %} active{% endif %}" href="{% url 'dashboard:profit_calculator' %}"><i class="bi bi-percent"></i> Cálculo de lucro</a>
+            </div>
+        </details>
+
+        <details class="sidebar-group{% if 'employee' in request.resolver_match.url_name or 'administrator' in request.resolver_match.url_name or request.resolver_match.url_name == 'system_settings' %} active{% endif %}"{% if 'employee' in request.resolver_match.url_name or 'administrator' in request.resolver_match.url_name or request.resolver_match.url_name == 'system_settings' %} open{% endif %}>
+            <summary class="sidebar-group-summary"><i class="bi bi-people-fill"></i> Equipe e administração <i class="bi bi-chevron-down sidebar-group-chevron" aria-hidden="true"></i></summary>
+            <div class="sidebar-group-links">
+                <a class="sidebar-link{% if 'employee' in request.resolver_match.url_name %} active{% endif %}" href="{% url 'dashboard:employee_list' %}"><i class="bi bi-person-vcard"></i> Funcionários</a>
+                {% if user.is_superuser %}
+                    <a class="sidebar-link{% if 'administrator' in request.resolver_match.url_name %} active{% endif %}" href="{% url 'dashboard:administrator_list' %}"><i class="bi bi-person-gear"></i> Administradores</a>
+                {% endif %}
+                <a class="sidebar-link{% if request.resolver_match.url_name == 'system_settings' %} active{% endif %}" href="{% url 'dashboard:system_settings' %}"><i class="bi bi-sliders"></i> Configurações</a>
+            </div>
+        </details>
+    </nav>
+    <div class="sidebar-bottom">
+        <a class="sidebar-link" href="{% url 'home' %}"><i class="bi bi-globe2"></i> Ver o site</a>
+        <a class="sidebar-link" href="{% url 'admin:index' %}"><i class="bi bi-gear"></i> Admin do Django</a>
+    </div>
+</aside>
+<div class="admin-overlay" data-sidebar-overlay></div>
+{% endblock %}
+
+{% block site_footer %}{% endblock %}
+
+{% block content %}{% block dashboard_content %}{% endblock %}{% endblock %}
+
+{% block extra_scripts %}
+{{ block.super }}
+<dialog class="notification-dialog" id="quote-notification-dialog">
+    <div class="dialog-body">
+        <div class="notification-icon"><i class="bi bi-bell-fill" aria-hidden="true"></i></div>
+        <p class="eyebrow">Novo orçamento</p>
+        <h2>Um cliente solicitou orçamento</h2>
+        <p><strong id="notification-customer"></strong><br><span id="notification-time"></span></p>
+        <div class="dialog-actions">
+            <button class="button secondary" type="button" data-notification-close>Fechar</button>
+            <a class="button" id="notification-link" href="#">Ver solicitação</a>
+        </div>
+    </div>
+</dialog>
+<form hidden id="notification-csrf">{% csrf_token %}</form>
+<script>
+    (() => {
+        const sidebar = document.getElementById('admin-sidebar');
+        const overlay = document.querySelector('[data-sidebar-overlay]');
+        const openButton = document.querySelector('[data-sidebar-open]');
+        const closeButton = document.querySelector('[data-sidebar-close]');
+        const dialog = document.getElementById('quote-notification-dialog');
+        let polling = false;
+
+        function setSidebar(open) {
+            sidebar.classList.toggle('open', open);
+            overlay.classList.toggle('visible', open);
+            sidebar.setAttribute('aria-hidden', String(!open));
+            openButton.setAttribute('aria-expanded', String(open));
+        }
+        sidebar.querySelectorAll('.sidebar-group').forEach((group) => {
+            group.addEventListener('toggle', () => {
+                if (!group.open) return;
+                sidebar.querySelectorAll('.sidebar-group[open]').forEach((otherGroup) => {
+                    if (otherGroup !== group) otherGroup.open = false;
+                });
+            });
+        });
+        openButton.addEventListener('click', () => setSidebar(true));
+        closeButton.addEventListener('click', () => setSidebar(false));
+        overlay.addEventListener('click', () => setSidebar(false));
+        document.addEventListener('keydown', (event) => { if (event.key === 'Escape') setSidebar(false); });
+
+        async function pollNotifications() {
+            if (polling || dialog.open || document.hidden) return;
+            polling = true;
+            try {
+                const csrf = document.querySelector('#notification-csrf input').value;
+                const response = await fetch('{% url "dashboard:next_quote_notification" %}', {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': csrf, 'X-Requested-With': 'XMLHttpRequest' },
+                });
+                if (!response.ok) return;
+                const data = await response.json();
+                if (!data.quote) return;
+                document.getElementById('notification-customer').textContent = data.quote.customer;
+                document.getElementById('notification-time').textContent = `Solicitado em ${data.quote.requested_at}`;
+                document.getElementById('notification-link').href = data.quote.url;
+                dialog.showModal();
+            } catch (error) {
+                // A página continua utilizável mesmo se uma consulta de notificação falhar.
+            } finally {
+                polling = false;
+            }
+        }
+
+        document.querySelector('[data-notification-close]').addEventListener('click', () => {
+            dialog.close();
+            window.setTimeout(pollNotifications, 500);
+        });
+        pollNotifications();
+        window.setInterval(pollNotifications, 15000);
+    })();
+</script>
+{% endblock %}

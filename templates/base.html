@@ -1,0 +1,545 @@
+{% load static %}
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Área do cliente da Globo Vidraçaria.">
+    <meta name="robots" content="noindex, nofollow, noarchive">
+    <title>{% block title %}Globo Vidraçaria{% endblock %}</title>
+    <link rel="icon" href="{% static 'img/logo_globo.jpeg' %}" type="image/jpeg">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <script>
+        (() => {
+            const storedTheme = localStorage.getItem('globo-theme');
+            const preferredTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            document.documentElement.dataset.theme = storedTheme || preferredTheme;
+        })();
+    </script>
+    <style>
+        :root {
+            color-scheme: light;
+            --brand: #08783e;
+            --brand-strong: #064b2b;
+            --brand-soft: #e6f6ed;
+            --accent: #f7c600;
+            --accent-strong: #c79500;
+            --ink: #10261b;
+            --muted: #5b7466;
+            --surface: #ffffff;
+            --surface-soft: #f4f8f5;
+            --border: #d4e2da;
+            --danger: #c7323f;
+            --danger-soft: #fff0f1;
+            --success: #08783e;
+            --success-soft: #e6f6ed;
+            --warning-soft: #fff8df;
+            --shadow-sm: 0 8px 24px rgba(9, 67, 38, .08);
+            --shadow-lg: 0 24px 60px rgba(9, 67, 38, .14);
+        }
+
+        [data-theme="dark"] {
+            color-scheme: dark;
+            --brand: #20a85d;
+            --brand-strong: #147a45;
+            --brand-soft: #123426;
+            --accent: #ffcc29;
+            --accent-strong: #e3aa00;
+            --ink: #eef8f1;
+            --muted: #a5b9ac;
+            --surface: #101c16;
+            --surface-soft: #07130d;
+            --border: #294236;
+            --danger: #ff7b85;
+            --danger-soft: #381b22;
+            --success: #5fe29a;
+            --success-soft: #123426;
+            --warning-soft: #3c3213;
+            --shadow-sm: 0 8px 24px rgba(0, 0, 0, .2);
+            --shadow-lg: 0 24px 60px rgba(0, 0, 0, .32);
+        }
+
+        * { box-sizing: border-box; }
+
+        html { min-height: 100%; }
+
+        body {
+            min-height: 100vh;
+            margin: 0;
+            background:
+                radial-gradient(circle at 8% 14%, rgba(8, 120, 62, .13), transparent 28rem),
+                radial-gradient(circle at 92% 82%, rgba(247, 198, 0, .13), transparent 24rem),
+                var(--surface-soft);
+            color: var(--ink);
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            line-height: 1.55;
+        }
+
+        button, input, select, textarea { font: inherit; }
+        button, a { -webkit-tap-highlight-color: transparent; }
+        a { color: var(--brand); }
+        img { max-width: 100%; }
+
+        .site-header {
+            position: sticky;
+            top: 0;
+            z-index: 30;
+            background: color-mix(in srgb, var(--surface) 90%, transparent);
+            border-bottom: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
+            backdrop-filter: blur(18px);
+        }
+
+        .header-inner,
+        .site-main,
+        .footer-inner {
+            width: min(100% - 2rem, 1120px);
+            margin-inline: auto;
+        }
+
+        .header-inner {
+            min-height: 76px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .brand {
+            display: inline-flex;
+            align-items: center;
+            gap: .75rem;
+            color: var(--ink);
+            font-weight: 800;
+            letter-spacing: -.02em;
+            text-decoration: none;
+        }
+
+        .brand-mark {
+            width: 68px;
+            height: 42px;
+            display: block;
+            object-fit: contain;
+            background: #fff;
+            border: 2px solid color-mix(in srgb, var(--accent) 82%, white);
+            border-radius: .55rem;
+            box-shadow: 0 6px 16px rgba(8, 78, 42, .24);
+        }
+
+        .brand-copy { display: grid; line-height: 1.05; }
+        .brand-copy small { margin-top: .25rem; color: var(--muted); font-size: .68rem; font-weight: 650; letter-spacing: .16em; text-transform: uppercase; }
+
+        .header-actions { display: flex; align-items: center; gap: .55rem; }
+        .header-actions form { margin: 0; }
+
+        .nav-link,
+        .icon-button {
+            min-height: 42px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: .45rem;
+            padding: .62rem .9rem;
+            color: var(--ink);
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: .7rem;
+            cursor: pointer;
+            font-weight: 700;
+            text-decoration: none;
+            transition: .2s ease;
+        }
+
+        .nav-link:hover,
+        .icon-button:hover { background: var(--brand-soft); color: var(--brand); }
+        .nav-link.outlined { border-color: var(--border); }
+        .nav-link.primary { color: #fff; background: var(--brand); }
+        .nav-link.primary:hover { color: #fff; background: var(--brand-strong); }
+        .icon-button { width: 42px; padding: 0; border-color: var(--border); }
+
+        .site-main { min-height: calc(100vh - 160px); padding-block: clamp(2rem, 5vw, 4.25rem); }
+
+        .messages {
+            display: grid;
+            gap: .75rem;
+            margin: 0 0 1.25rem;
+            padding: 0;
+            list-style: none;
+        }
+
+        .message {
+            display: flex;
+            align-items: flex-start;
+            gap: .7rem;
+            padding: .9rem 1rem;
+            color: var(--success);
+            background: var(--success-soft);
+            border: 1px solid color-mix(in srgb, var(--success) 28%, transparent);
+            border-radius: .85rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .message.warning { color: var(--accent-strong); background: var(--warning-soft); }
+        .message.error { color: var(--danger); background: var(--danger-soft); }
+        .message.info { color: var(--brand); background: var(--brand-soft); }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+            border-radius: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 1.45rem clamp(1.25rem, 4vw, 2.5rem);
+            color: #fff;
+            background: linear-gradient(120deg, var(--brand-strong), #0b7a41);
+        }
+
+        .card-header.warning { color: #2c2200; background: linear-gradient(120deg, #ffd34f, var(--accent)); }
+        .card-header h1, .card-header h2 { margin: 0; font-size: clamp(1.35rem, 3vw, 1.8rem); }
+        .card-header p { margin: .25rem 0 0; opacity: .82; }
+        .card-body { padding: clamp(1.4rem, 5vw, 2.75rem); }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: .45rem;
+            margin: 0 0 .65rem;
+            color: var(--brand);
+            font-size: .76rem;
+            font-weight: 850;
+            letter-spacing: .14em;
+            text-transform: uppercase;
+        }
+
+        .page-title { margin: 0; font-size: clamp(1.8rem, 5vw, 3rem); line-height: 1.08; letter-spacing: -.04em; }
+        .page-subtitle { max-width: 58ch; margin: .75rem 0 0; color: var(--muted); }
+
+        .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.1rem; }
+        .form-field { min-width: 0; }
+        .form-field.full { grid-column: 1 / -1; }
+
+        .form-field > label,
+        .field-label {
+            display: block;
+            margin-bottom: .42rem;
+            color: var(--ink);
+            font-size: .9rem;
+            font-weight: 750;
+        }
+
+        .required-mark { color: var(--danger); }
+
+        .form-field input:not([type="radio"]):not([type="checkbox"]):not([type="range"]),
+        .form-field select,
+        .form-field textarea,
+        .password-field input {
+            width: 100%;
+            min-height: 48px;
+            padding: .72rem .85rem;
+            color: var(--ink);
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: .72rem;
+            outline: none;
+            transition: border-color .2s, box-shadow .2s, background .2s;
+        }
+
+        .form-field input[type="file"] { padding: .55rem; }
+        .form-field input::file-selector-button {
+            margin: -.15rem .75rem -.15rem -.15rem;
+            padding: .52rem .72rem;
+            color: var(--brand);
+            background: var(--brand-soft);
+            border: 0;
+            border-radius: .5rem;
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        .form-field input:focus,
+        .form-field select:focus,
+        .form-field textarea:focus,
+        .password-field input:focus {
+            border-color: var(--brand);
+            box-shadow: 0 0 0 4px color-mix(in srgb, var(--brand) 14%, transparent);
+        }
+
+        .password-field { position: relative; }
+        .password-field input { padding-right: 3.2rem; }
+        .password-toggle {
+            position: absolute;
+            top: 50%;
+            right: .4rem;
+            transform: translateY(-50%);
+            width: 40px;
+            height: 40px;
+            display: grid;
+            place-items: center;
+            padding: 0;
+            color: var(--muted);
+            background: transparent;
+            border: 0;
+            border-radius: .55rem;
+            cursor: pointer;
+            z-index: 2;
+            font-size: 1.08rem;
+        }
+        .password-toggle:hover { color: var(--brand); background: var(--brand-soft); }
+
+        .radio-list {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: .75rem;
+        }
+        .radio-list > div { min-width: 0; }
+        .radio-list label {
+            min-height: 52px;
+            display: flex;
+            align-items: center;
+            gap: .65rem;
+            padding: .7rem .8rem;
+            border: 1.5px solid var(--border);
+            border-radius: .72rem;
+            cursor: pointer;
+            font-weight: 650;
+            transition: .2s ease;
+        }
+        .radio-list label:hover { border-color: var(--brand); background: var(--brand-soft); }
+        .radio-list input { width: 1rem; height: 1rem; accent-color: var(--brand); }
+
+        .helptext { display: block; margin-top: .38rem; color: var(--muted); font-size: .78rem; }
+        .helptext ul { margin: .4rem 0 0; padding-left: 1.1rem; }
+        .errorlist { margin: .4rem 0 0; padding: 0; color: var(--danger); font-size: .84rem; list-style: none; }
+
+        .alert {
+            display: flex;
+            gap: .7rem;
+            padding: .85rem 1rem;
+            margin-bottom: 1.15rem;
+            border: 1px solid;
+            border-radius: .8rem;
+        }
+        .alert-danger { color: var(--danger); background: var(--danger-soft); border-color: color-mix(in srgb, var(--danger) 25%, transparent); }
+        .alert-warning { color: var(--accent-strong); background: var(--warning-soft); border-color: color-mix(in srgb, var(--accent) 35%, transparent); }
+        .alert p { margin: 0; }
+
+        .button-row { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; margin-top: 1.6rem; }
+        .button-row.end { justify-content: flex-end; }
+
+        .button {
+            min-height: 46px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: .5rem;
+            padding: .7rem 1.1rem;
+            color: #fff;
+            background: var(--brand);
+            border: 1px solid var(--brand);
+            border-radius: .72rem;
+            cursor: pointer;
+            font-weight: 800;
+            line-height: 1.2;
+            text-decoration: none;
+            transition: transform .2s, box-shadow .2s, background .2s;
+        }
+        .button:hover { color: #fff; background: var(--brand-strong); transform: translateY(-1px); box-shadow: 0 8px 18px color-mix(in srgb, var(--brand) 24%, transparent); }
+        .button.accent { color: #2b2200; background: var(--accent); border-color: var(--accent); }
+        .button.accent:hover { color: #2b2200; background: var(--accent-strong); }
+        .button.secondary { color: var(--ink); background: transparent; border-color: var(--border); }
+        .button.secondary:hover { color: var(--brand); background: var(--brand-soft); box-shadow: none; }
+        .button.danger { color: #fff; background: var(--danger); border-color: var(--danger); }
+        .button.danger:hover { color: #fff; background: color-mix(in srgb, var(--danger) 82%, black); }
+        .button.small { min-height: 40px; padding: .55rem .85rem; font-size: .9rem; }
+
+        .section-divider {
+            grid-column: 1 / -1;
+            display: flex;
+            align-items: center;
+            gap: .6rem;
+            margin: .75rem 0 .1rem;
+            padding-bottom: .65rem;
+            color: var(--brand);
+            border-bottom: 1px solid var(--border);
+            font-size: 1rem;
+            font-weight: 800;
+        }
+
+        .site-footer { padding: 1.5rem 0 2rem; color: var(--muted); font-size: .82rem; }
+        .footer-inner { display: flex; justify-content: space-between; gap: 1rem; border-top: 1px solid var(--border); padding-top: 1.25rem; }
+
+        dialog {
+            width: min(100% - 2rem, 540px);
+            padding: 0;
+            color: var(--ink);
+            background: var(--surface);
+            border: 0;
+            border-radius: 1.2rem;
+            box-shadow: 0 30px 90px rgba(0, 0, 0, .32);
+        }
+        dialog::backdrop { background: rgba(5, 14, 25, .68); backdrop-filter: blur(4px); }
+        .dialog-body { padding: 2rem; text-align: center; }
+        .danger-icon {
+            width: 86px;
+            height: 86px;
+            display: grid;
+            place-items: center;
+            margin: 0 auto 1.2rem;
+            color: var(--danger);
+            background: var(--danger-soft);
+            border-radius: 50%;
+            font-size: 2.6rem;
+        }
+        .dialog-body h2 { margin: 0 0 .65rem; font-size: 1.65rem; }
+        .dialog-body > p { margin: 0; color: var(--muted); }
+        .danger-note { margin: 1.3rem 0 0; padding: .9rem; color: var(--danger); background: var(--danger-soft); border: 1px solid color-mix(in srgb, var(--danger) 24%, transparent); border-radius: .75rem; font-size: .9rem; font-weight: 700; }
+        .dialog-actions { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; margin-top: 1.4rem; }
+        .dialog-actions .button { width: 100%; }
+
+        :focus-visible { outline: 3px solid color-mix(in srgb, var(--brand) 38%, transparent); outline-offset: 3px; }
+
+        @media (max-width: 720px) {
+            .brand-copy small { display: none; }
+            .header-actions .nav-label { display: none; }
+            .header-actions .nav-link { width: 42px; padding-inline: 0; }
+            .form-grid { grid-template-columns: 1fr; }
+            .form-field.full, .section-divider { grid-column: auto; }
+            .button-row.end .button { flex: 1; }
+            .footer-inner { flex-direction: column; }
+        }
+
+        @media (max-width: 440px) {
+            .header-inner, .site-main, .footer-inner { width: min(100% - 1.2rem, 1120px); }
+            .brand-copy > span { font-size: .9rem; }
+            .radio-list, .dialog-actions { grid-template-columns: 1fr; }
+            .card { border-radius: 1rem; }
+            .dialog-body { padding: 1.4rem; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+        }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+    {% block site_header %}
+    <header class="site-header">
+        <div class="header-inner">
+            <a class="brand" href="{% url 'home' %}">
+                <img class="brand-mark" src="{% static 'img/logo_globo.jpeg' %}" alt="">
+                <span class="brand-copy">
+                    <span>Globo Vidraçaria</span>
+                    <small>Transparência e qualidade</small>
+                </span>
+            </a>
+
+            <nav class="header-actions" aria-label="Navegação principal">
+                <a class="nav-link" href="{% url 'products:list' %}" aria-label="Ver produtos">
+                    <i class="bi bi-grid" aria-hidden="true"></i>
+                    <span class="nav-label">Produtos</span>
+                </a>
+                <a class="nav-link" href="{% url 'glazing_services:list' %}" aria-label="Ver serviços">
+                    <i class="bi bi-tools" aria-hidden="true"></i>
+                    <span class="nav-label">Serviços</span>
+                </a>
+                {% if user.is_authenticated %}
+                    {% if user.is_staff %}
+                        <a class="nav-link" href="{% url 'dashboard:home' %}" aria-label="Painel administrativo">
+                            <i class="bi bi-speedometer2" aria-hidden="true"></i>
+                            <span class="nav-label">Painel</span>
+                        </a>
+                    {% else %}
+                        <a class="nav-link primary" href="{% url 'dashboard:request_quote' %}" aria-label="Solicitar orçamento">
+                            <i class="bi bi-file-earmark-text" aria-hidden="true"></i>
+                            <span class="nav-label">Orçamento</span>
+                        </a>
+                        {% if request.resolver_match.view_name != 'accounts:profile' %}
+                            <a class="nav-link" href="{% url 'accounts:profile' %}" aria-label="Meu perfil">
+                                <i class="bi bi-person-circle" aria-hidden="true"></i>
+                                <span class="nav-label">Meu perfil</span>
+                            </a>
+                        {% endif %}
+                    {% endif %}
+                    {% if request.resolver_match.view_name != 'accounts:profile' %}
+                        <form method="post" action="{% url 'accounts:logout' %}">
+                            {% csrf_token %}
+                            <button class="nav-link outlined" type="submit" aria-label="Sair da conta">
+                                <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+                                <span class="nav-label">Sair</span>
+                            </button>
+                        </form>
+                    {% endif %}
+                {% else %}
+                    <a class="nav-link primary" href="{% url 'dashboard:request_quote' %}" aria-label="Solicitar orçamento">
+                        <i class="bi bi-file-earmark-text" aria-hidden="true"></i>
+                        <span class="nav-label">Orçamento</span>
+                    </a>
+                    <a class="nav-link" href="{% url 'accounts:login' %}" aria-label="Entrar">
+                        <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i>
+                        <span class="nav-label">Entrar</span>
+                    </a>
+                    <a class="nav-link primary" href="{% url 'accounts:register' %}" aria-label="Criar conta">
+                        <i class="bi bi-person-plus" aria-hidden="true"></i>
+                        <span class="nav-label">Criar conta</span>
+                    </a>
+                {% endif %}
+                <button class="icon-button" id="theme-toggle" type="button" aria-label="Ativar tema escuro" title="Alternar tema">
+                    <i class="bi bi-moon-stars" aria-hidden="true"></i>
+                </button>
+            </nav>
+        </div>
+    </header>
+    {% endblock %}
+
+    <main class="site-main">
+        {% if messages %}
+            <ul class="messages" aria-label="Avisos">
+                {% for message in messages %}
+                    <li class="message {{ message.tags }}">
+                        <i class="bi bi-info-circle-fill" aria-hidden="true"></i>
+                        <span>{{ message }}</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        {% block content %}{% endblock %}
+    </main>
+
+    {% block site_footer %}
+    <footer class="site-footer">
+        <div class="footer-inner">
+            <span>&copy; {% now "Y" %} Globo Vidraçaria</span>
+            <span>Seu projeto em vidro, do orçamento à instalação.</span>
+        </div>
+    </footer>
+    {% endblock %}
+
+    <script>
+        (() => {
+            const root = document.documentElement;
+            const toggle = document.getElementById('theme-toggle');
+            if (!toggle) return;
+            const icon = toggle.querySelector('i');
+
+            function updateThemeButton() {
+                const isDark = root.dataset.theme === 'dark';
+                toggle.setAttribute('aria-label', isDark ? 'Ativar tema claro' : 'Ativar tema escuro');
+                icon.className = isDark ? 'bi bi-sun' : 'bi bi-moon-stars';
+            }
+
+            toggle.addEventListener('click', () => {
+                root.dataset.theme = root.dataset.theme === 'dark' ? 'light' : 'dark';
+                localStorage.setItem('globo-theme', root.dataset.theme);
+                updateThemeButton();
+            });
+
+            updateThemeButton();
+        })();
+    </script>
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

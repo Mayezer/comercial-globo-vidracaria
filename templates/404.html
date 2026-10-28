@@ -1,0 +1,54 @@
+{% extends 'showcase/base.html' %}
+{% load static %}
+
+{% block title %}Página não encontrada | Globo Vidraçaria{% endblock %}
+{% block meta_description %}A página que você procurou não foi encontrada. Volte ao início ou conheça nossos produtos e serviços.{% endblock %}
+{% block og_title %}Página não encontrada | Globo Vidraçaria{% endblock %}
+{% block og_description %}Este endereço não está disponível. Continue navegando pelos produtos e serviços da Globo Vidraçaria.{% endblock %}
+{% block main_class %}{% endblock %}
+
+{% block extra_head %}
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="{% static 'css/error-pages.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="not-found-page" aria-labelledby="not-found-title">
+    <div class="container">
+        <div class="not-found-shell">
+            <div class="not-found-content">
+                <span class="not-found-eyebrow">
+                    <i class="bi bi-compass" aria-hidden="true"></i>
+                    Parece que você saiu da rota
+                </span>
+                <h1 class="not-found-title" id="not-found-title">Não encontramos esta página.</h1>
+                <p class="not-found-copy">O endereço pode ter mudado ou sido digitado incorretamente. Você pode voltar ao início ou seguir para uma das áreas abaixo.</p>
+
+                <div class="not-found-actions">
+                    <a class="btn btn-primary btn-lg px-4" href="{% url 'home' %}">
+                        <i class="bi bi-house-door" aria-hidden="true"></i>
+                        Voltar ao início
+                    </a>
+                    {% if not user.is_staff %}
+                        <a class="btn btn-outline-success btn-lg px-4" href="{% url 'dashboard:request_quote' %}">
+                            <i class="bi bi-file-earmark-text" aria-hidden="true"></i>
+                            Solicitar orçamento
+                        </a>
+                    {% endif %}
+                </div>
+
+                <ul class="not-found-links" aria-label="Outros caminhos">
+                    <li><a href="{% url 'products:list' %}"><i class="bi bi-grid" aria-hidden="true"></i> Ver produtos</a></li>
+                    <li><a href="{% url 'glazing_services:list' %}"><i class="bi bi-tools" aria-hidden="true"></i> Conhecer serviços</a></li>
+                    <li><a href="{% url 'home' %}#contato"><i class="bi bi-chat-dots" aria-hidden="true"></i> Falar conosco</a></li>
+                </ul>
+            </div>
+
+            <div class="error-window" aria-hidden="true">
+                <p class="error-code">404</p>
+                <p class="error-note">Nada quebrou por aqui — só não encontramos o caminho.</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

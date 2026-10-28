@@ -1,0 +1,46 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Fornecedores | Painel Globo{% endblock %}
+
+{% block dashboard_content %}
+<header class="dashboard-heading">
+    <div>
+        <p class="eyebrow"><i class="bi bi-truck"></i> Cadastros</p>
+        <h1>Fornecedores</h1>
+        <p>Mantenha contatos e documentos dos fornecedores usados na gestão de gastos.</p>
+    </div>
+    <a class="button" href="{% url 'dashboard:supplier_create' %}"><i class="bi bi-plus-lg"></i> Novo fornecedor</a>
+</header>
+
+<form class="search-form admin-filter" method="get">
+    <input type="search" name="q" value="{{ query }}" placeholder="Buscar por nome, documento, telefone ou e-mail" aria-label="Buscar fornecedores">
+    <button class="button secondary" type="submit"><i class="bi bi-search"></i> Buscar</button>
+</form>
+
+<section class="admin-panel">
+    {% if suppliers %}
+        <div class="admin-table-wrap">
+            <table class="admin-table">
+                <thead><tr><th>Fornecedor</th><th>Contato</th><th>Documento</th><th>Status</th><th>Gastos</th><th>Ações</th></tr></thead>
+                <tbody>
+                    {% for supplier in suppliers %}
+                    <tr>
+                        <td><strong>{{ supplier.name }}</strong>{% if supplier.email %}<br><small>{{ supplier.email }}</small>{% endif %}</td>
+                        <td>{{ supplier.contact_name|default:'—' }}{% if supplier.phone %}<br><small>{{ supplier.phone }}</small>{% endif %}</td>
+                        <td>{{ supplier.formatted_tax_id|default:'—' }}</td>
+                        <td><span class="status-badge {% if supplier.is_active %}status-active{% else %}status-inactive{% endif %}">{% if supplier.is_active %}Ativo{% else %}Inativo{% endif %}</span></td>
+                        <td>{{ supplier.expense_count }}</td>
+                        <td><div class="table-actions">
+                            <a class="button secondary small" href="{% url 'dashboard:supplier_edit' supplier.pk %}"><i class="bi bi-pencil"></i> Editar</a>
+                            <form method="post" action="{% url 'dashboard:supplier_delete' supplier.pk %}" onsubmit="return confirm('Excluir o fornecedor {{ supplier.name|escapejs }}? Os gastos existentes serão preservados.');">{% csrf_token %}<button class="button danger small" type="submit"><i class="bi bi-trash3"></i> Excluir</button></form>
+                        </div></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="empty-state"><i class="bi bi-truck"></i><strong>Nenhum fornecedor encontrado.</strong></div>
+    {% endif %}
+</section>
+{% endblock %}

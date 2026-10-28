@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+
+{% block title %}Solicitar orçamento | Globo Vidraçaria{% endblock %}
+
+{% block extra_head %}
+<style>
+    .quote-page { width: min(100%, 980px); margin-inline: auto; }
+    .quote-intro { display: flex; align-items: end; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem; }
+    .customer-address { max-width: 360px; padding: .85rem 1rem; color: var(--muted); background: var(--surface); border: 1px solid var(--border); border-radius: .85rem; font-size: .84rem; box-shadow: var(--shadow-sm); }
+    .customer-address strong { display: block; margin-bottom: .2rem; color: var(--ink); }
+    .quote-form-card .card-body { padding: clamp(1.25rem, 5vw, 2.5rem); }
+    .quote-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.2rem; }
+    .option-group { min-width: 0; padding: 1rem; background: var(--surface-soft); border: 1px solid var(--border); border-radius: .9rem; }
+    .option-group > h2 { display: flex; align-items: center; gap: .5rem; margin: 0 0 .8rem; color: var(--brand); font-size: 1rem; }
+    .option-group > p { margin: -.45rem 0 .9rem; color: var(--muted); font-size: .8rem; }
+    .option-group ul { display: grid; gap: .5rem; max-height: 260px; margin: 0; padding: 0; overflow-y: auto; list-style: none; }
+    .option-group label { display: flex; align-items: flex-start; gap: .6rem; padding: .65rem .7rem; background: var(--surface); border: 1px solid var(--border); border-radius: .7rem; cursor: pointer; font-size: .88rem; font-weight: 650; }
+    .option-group label:hover { border-color: var(--brand); }
+    .option-group input { margin-top: .22rem; accent-color: var(--brand); }
+    .details-field { margin-top: 1.2rem; }
+    .details-field textarea { width: 100%; padding: .8rem; color: var(--ink); background: var(--surface); border: 1.5px solid var(--border); border-radius: .75rem; resize: vertical; }
+    .cooldown-card { display: flex; align-items: center; gap: .85rem; margin-top: 1rem; padding: .9rem 1rem; color: var(--accent-strong); background: var(--warning-soft); border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent); border-radius: .8rem; }
+    .cooldown-card i { font-size: 1.5rem; }
+    .cooldown-card strong { display: block; color: var(--ink); }
+    .quote-submit[disabled] { cursor: not-allowed; opacity: .55; transform: none; box-shadow: none; }
+    .recent-quotes { margin-top: 1.5rem; }
+    .recent-list { display: grid; gap: .75rem; margin: 0; padding: 1rem; list-style: none; }
+    .recent-list li { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding-bottom: .75rem; border-bottom: 1px solid var(--border); }
+    .recent-list li:last-child { padding-bottom: 0; border-bottom: 0; }
+    .recent-list small { display: block; color: var(--muted); }
+    .client-status { padding: .32rem .55rem; border-radius: 999px; font-size: .72rem; font-weight: 800; }
+    .client-status.pending { color: #8a6200; background: #fff2c2; }
+    .client-status.completed { color: #08643a; background: #dff7e9; }
+    .client-status.cancelled { color: #a32632; background: #ffe2e5; }
+    @media (max-width: 740px) { .quote-intro { align-items: flex-start; flex-direction: column; } .customer-address { max-width: none; width: 100%; } .quote-options { grid-template-columns: 1fr; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="quote-page">
+    <header class="quote-intro">
+        <div><p class="eyebrow"><i class="bi bi-file-earmark-text"></i> Atendimento personalizado</p><h1 class="page-title">Solicitar orçamento</h1><p class="page-subtitle">Escolha itens de interesse e conte um pouco sobre o seu projeto.</p></div>
+        <div class="customer-address"><strong><i class="bi bi-geo-alt-fill"></i> Endereço do atendimento</strong>{{ customer.street }}, nº {{ customer.house_number }} — {{ customer.neighborhood }} <a href="{% url 'accounts:edit_profile' %}">Editar</a></div>
+    </header>
+
+    <section class="card quote-form-card">
+        <header class="card-header"><h2>Seu pedido</h2><p>Você pode enviar uma nova solicitação a cada quatro horas.</p></header>
+        <div class="card-body">
+            <form method="post" novalidate>{% csrf_token %}
+                {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+                <div class="quote-options">
+                    <section class="option-group"><h2><i class="bi bi-box-seam"></i> {{ form.products.label }}</h2><p>Marque quantos produtos precisar.</p>{{ form.products }}{% for error in form.products.errors %}<p class="errorlist">{{ error }}</p>{% endfor %}</section>
+                    <section class="option-group"><h2><i class="bi bi-tools"></i> {{ form.services.label }}</h2><p>Selecione os serviços relacionados.</p>{{ form.services }}{% for error in form.services.errors %}<p class="errorlist">{{ error }}</p>{% endfor %}</section>
+                </div>
+                <div class="form-field details-field"><label for="{{ form.details.id_for_label }}">{{ form.details.label }}</label>{{ form.details }}{% for error in form.details.errors %}<p class="errorlist">{{ error }}</p>{% endfor %}</div>
+
+                {% if not can_request %}
+                <div class="cooldown-card" data-cooldown="{{ next_allowed_at|date:'c' }}"><i class="bi bi-hourglass-split"></i><div><strong>Aguarde para solicitar novamente</strong><span>Disponível em <b data-countdown>calculando…</b>.</span></div></div>
+                {% endif %}
+                <div class="button-row end"><a class="button secondary" href="{% url 'accounts:profile' %}">Voltar ao perfil</a><button class="button accent quote-submit" type="submit"{% if not can_request %} disabled{% endif %}><i class="bi bi-send"></i> Solicitar orçamento</button></div>
+            </form>
+        </div>
+    </section>
+
+    {% if recent_quotes %}
+    <section class="admin-panel recent-quotes" style="background: var(--surface); border: 1px solid var(--border); border-radius: 1rem; overflow: hidden; box-shadow: var(--shadow-sm);">
+        <header style="padding: 1rem 1.15rem; border-bottom: 1px solid var(--border);"><h2 style="margin:0; font-size:1.05rem;">Minhas solicitações recentes</h2></header>
+        <ul class="recent-list">{% for quote in recent_quotes %}<li><div><strong>Orçamento #{{ quote.pk }}</strong><small>{{ quote.requested_at|date:'d/m/Y' }} às {{ quote.requested_at|date:'H:i' }}</small></div><span class="client-status {{ quote.status }}">{{ quote.get_status_display }}</span></li>{% endfor %}</ul>
+    </section>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    (() => {
+        const cooldown = document.querySelector('[data-cooldown]');
+        if (!cooldown) return;
+        const countdown = cooldown.querySelector('[data-countdown]');
+        const submit = document.querySelector('.quote-submit');
+        const deadline = new Date(cooldown.dataset.cooldown).getTime();
+
+        function updateCountdown() {
+            const remaining = deadline - Date.now();
+            if (remaining <= 0) {
+                countdown.textContent = 'agora';
+                submit.disabled = false;
+                cooldown.remove();
+                window.clearInterval(timer);
+                return;
+            }
+            const hours = Math.floor(remaining / 3600000);
+            const minutes = Math.floor((remaining % 3600000) / 60000);
+            const seconds = Math.floor((remaining % 60000) / 1000);
+            countdown.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+        const timer = window.setInterval(updateCountdown, 1000);
+        updateCountdown();
+    })();
+</script>
+{% endblock %}

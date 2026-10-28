@@ -1,0 +1,48 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Administradores | Painel Globo{% endblock %}
+
+{% block dashboard_content %}
+<header class="dashboard-heading">
+    <div>
+        <p class="eyebrow"><i class="bi bi-person-gear"></i> Acesso ao painel</p>
+        <h1>Administradores</h1>
+        <p>Gerencie quem pode operar o painel da Globo Vidraçaria.</p>
+    </div>
+    <a class="button" href="{% url 'dashboard:administrator_create' %}"><i class="bi bi-person-plus"></i> Novo administrador</a>
+</header>
+
+<section class="admin-panel">
+    <div class="admin-table-wrap">
+        <table class="admin-table">
+            <thead><tr><th>Administrador</th><th>Usuário</th><th>Perfil</th><th>Status</th><th>Criado em</th><th>Ações</th></tr></thead>
+            <tbody>
+                {% for administrator in administrators %}
+                <tr>
+                    <td><strong>{{ administrator.get_full_name|default:'Nome não informado' }}</strong><br><small>{{ administrator.email }}</small></td>
+                    <td>{{ administrator.username }}</td>
+                    <td>
+                        {% if administrator.is_superuser %}
+                            <span class="status-badge status-completed">Super admin</span>
+                        {% else %}
+                            <span class="status-badge status-pending">Administrador</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if administrator.is_active %}
+                            <span class="status-badge status-completed">Ativo</span>
+                        {% else %}
+                            <span class="status-badge status-cancelled">Inativo</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ administrator.date_joined|date:'d/m/Y' }}<br><small>às {{ administrator.date_joined|date:'H:i' }}</small></td>
+                    <td><a class="button secondary small" href="{% url 'dashboard:administrator_edit' administrator.pk %}"><i class="bi bi-pencil"></i> Editar</a></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6"><div class="empty-state"><i class="bi bi-person-x"></i><strong>Nenhum administrador encontrado.</strong></div></td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

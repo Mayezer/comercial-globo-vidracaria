@@ -1,0 +1,343 @@
+{% load static %}
+<!doctype html>
+<html lang="pt-BR" data-bs-theme="light">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="{% block meta_description %}Globo Vidraçaria: vidros sob medida, produtos, serviços e materiais para construção.{% endblock %}">
+    {% if google_site_verification %}<meta name="google-site-verification" content="{{ google_site_verification }}">{% endif %}
+    <title>{% block title %}Globo Vidraçaria e Materiais para Construção{% endblock %}</title>
+    <link rel="canonical" href="{{ canonical_url }}">
+    <meta property="og:locale" content="pt_BR">
+    <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+    <meta property="og:site_name" content="Globo Vidraçaria">
+    <meta property="og:title" content="{% block og_title %}Globo Vidraçaria e Materiais para Construção{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}Vidros sob medida, produtos, serviços de instalação e manutenção e materiais para construção.{% endblock %}">
+    <meta property="og:url" content="{{ canonical_url }}">
+    <meta property="og:image" content="{% block og_image %}{{ public_site_url }}{% static 'img/logo_globo.jpeg' %}{% endblock %}">
+    <script type="application/ld+json">{{ local_business_json_ld|safe }}</script>
+    <link rel="icon" href="{% static 'img/logo_globo.jpeg' %}" type="image/jpeg">
+
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+
+    <script>
+        (() => {
+            const savedTheme = localStorage.getItem('globo-theme');
+            const preferredTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-bs-theme', savedTheme || preferredTheme);
+        })();
+    </script>
+
+    <style>
+        :root {
+            --primary-color: #08783e;
+            --primary-hover-color: #064b2b;
+            --footer-color: #064b2b;
+            --showcase-surface-soft: #f4f8f5;
+            --showcase-cover: url("{% static 'img/foto_capa_globo_vidracaria.jpg' %}");
+        }
+
+        [data-bs-theme="dark"] {
+            --primary-color: #20a85d;
+            --primary-hover-color: #147a45;
+            --footer-color: #07130d;
+            --showcase-surface-soft: #07130d;
+            --bs-body-color: #eef8f1;
+            --bs-body-color-rgb: 238, 248, 241;
+            --bs-body-bg: #07130d;
+            --bs-body-bg-rgb: 7, 19, 13;
+            --bs-secondary-color: #a5b9ac;
+            --bs-secondary-color-rgb: 165, 185, 172;
+            --bs-tertiary-bg: #123426;
+            --bs-border-color: #294236;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background:
+                radial-gradient(circle at 8% 14%, rgba(8, 120, 62, .13), transparent 28rem),
+                radial-gradient(circle at 92% 82%, rgba(247, 198, 0, .13), transparent 24rem),
+                var(--showcase-surface-soft);
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            transition: background-color .3s ease, color .3s ease;
+        }
+
+        [data-bs-theme="light"] .showcase-navbar {
+            background-color: rgba(255, 255, 255, .96) !important;
+            box-shadow: 0 2px 14px rgba(0, 0, 0, .07);
+        }
+
+        [data-bs-theme="dark"] .showcase-navbar {
+            background-color: rgba(16, 28, 22, .96) !important;
+            border-bottom: 1px solid #294236;
+        }
+
+        .showcase-navbar { backdrop-filter: blur(14px); }
+
+        .navbar-brand img {
+            width: 76px;
+            height: 45px;
+            margin-right: 10px;
+            object-fit: cover;
+            border-radius: .45rem;
+        }
+
+        .navbar-brand span { line-height: 1.05; }
+        .nav-link { font-weight: 600; }
+
+        .theme-toggle-btn {
+            width: 42px;
+            height: 42px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            background: transparent;
+            border: 0;
+            border-radius: 50%;
+            color: inherit;
+            cursor: pointer;
+            transition: background-color .25s ease, transform .25s ease;
+        }
+
+        .theme-toggle-btn:hover {
+            background-color: rgba(128, 128, 128, .18);
+            transform: rotate(8deg);
+        }
+
+        .showcase-main { flex-grow: 1; }
+
+        .btn-primary {
+            --bs-btn-bg: var(--primary-color);
+            --bs-btn-border-color: var(--primary-color);
+            --bs-btn-hover-bg: var(--primary-hover-color);
+            --bs-btn-hover-border-color: var(--primary-hover-color);
+            --bs-btn-active-bg: #053d24;
+            --bs-btn-active-border-color: #053d24;
+        }
+
+        .text-primary { color: var(--primary-color) !important; }
+        .bg-primary { background-color: var(--primary-color) !important; }
+        .showcase-footer .text-primary { color: var(--primary-color) !important; }
+
+        /* Classe pronta para a capa das páginas que estenderem este template. */
+        .showcase-hero {
+            min-height: min(720px, calc(100vh - 72px));
+            display: grid;
+            align-items: center;
+            color: #fff;
+            background-image:
+                linear-gradient(90deg, rgba(6, 44, 28, .86), rgba(6, 44, 28, .28)),
+                var(--showcase-cover);
+            background-position: center;
+            background-size: cover;
+        }
+
+        .showcase-footer {
+            margin-top: auto;
+            padding: 50px 0 30px;
+            color: #fff;
+            background-color: var(--footer-color);
+        }
+
+        [data-bs-theme="dark"] .showcase-footer { border-top: 1px solid #294236; }
+
+        .social-btn { transition: transform .3s ease, box-shadow .3s ease; }
+        .social-btn:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0, 0, 0, .3) !important; }
+        .map-btn { transition: transform .2s ease; }
+        .map-btn:hover { transform: scale(1.05); }
+
+        [data-bs-theme="dark"] .btn-outline-dark { color: #f8f9fa !important; border-color: #f8f9fa !important; }
+        [data-bs-theme="dark"] .card { background-color: #101c16; border-color: #294236; }
+        [data-bs-theme="dark"] .bg-white { color: #eef8f1 !important; background-color: #101c16 !important; }
+        [data-bs-theme="dark"] .dropdown-menu { background-color: #101c16; border-color: #294236; }
+        [data-bs-theme="dark"] .dropdown-item { color: #f8f9fa; }
+        [data-bs-theme="dark"] .dropdown-item:hover { background-color: #123426; }
+
+        @media (max-width: 991.98px) {
+            .showcase-navbar .navbar-collapse { padding: .75rem 0 1rem; }
+            .showcase-navbar .nav-item { width: 100%; text-align: center; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            html { scroll-behavior: auto; }
+            *, *::before, *::after { transition-duration: .01ms !important; }
+        }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg sticky-top showcase-navbar" aria-label="Navegação principal">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="/">
+                <img src="{% static 'img/logo_globo.jpeg' %}" alt="Logotipo da Globo Vidraçaria">
+                <span class="fw-bold">Globo<br class="d-sm-none"> Vidraçaria</span>
+            </a>
+
+            <button class="theme-toggle-btn d-lg-none ms-auto me-2" type="button" data-theme-toggle aria-label="Ativar tema escuro" title="Alternar tema">
+                <i class="bi bi-moon-stars" aria-hidden="true"></i>
+            </button>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#showcaseNavbar" aria-controls="showcaseNavbar" aria-expanded="false" aria-label="Abrir menu">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="showcaseNavbar">
+                <ul class="navbar-nav mx-auto align-items-lg-center gap-lg-2 my-3 my-lg-0">
+                    <li class="nav-item"><a class="nav-link" href="/#inicio">Início</a></li>
+                    <li class="nav-item"><a class="nav-link{% if request.resolver_match.app_name == 'products' %} active{% endif %}" href="{% url 'products:list' %}"{% if request.resolver_match.app_name == 'products' %} aria-current="page"{% endif %}>Produtos</a></li>
+                    <li class="nav-item"><a class="nav-link{% if request.resolver_match.app_name == 'glazing_services' %} active{% endif %}" href="{% url 'glazing_services:list' %}"{% if request.resolver_match.app_name == 'glazing_services' %} aria-current="page"{% endif %}>Serviços</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/#contato">Contato</a></li>
+                    {% if not user.is_staff %}<li class="nav-item"><a class="nav-link text-primary fw-bold" href="{% url 'dashboard:request_quote' %}"><i class="bi bi-file-earmark-text me-1"></i> Solicitar orçamento</a></li>{% endif %}
+                </ul>
+
+                <ul class="navbar-nav ms-auto align-items-lg-center gap-2 my-2 my-lg-0">
+                    <li class="nav-item d-none d-lg-block">
+                        <button class="theme-toggle-btn" type="button" data-theme-toggle aria-label="Ativar tema escuro" title="Alternar tema">
+                            <i class="bi bi-moon-stars" aria-hidden="true"></i>
+                        </button>
+                    </li>
+
+                    {% if user.is_authenticated %}
+                        {% if user.is_staff or user.is_superuser %}
+                            <li class="nav-item">
+                                <a class="btn btn-warning btn-sm fw-bold w-100" href="{% url 'dashboard:home' %}">
+                                    <i class="bi bi-speedometer2 me-1" aria-hidden="true"></i> Painel
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle text-primary fw-bold" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-person-circle" aria-hidden="true"></i> Meu perfil
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="profileDropdown">
+                                    <li>
+                                        <a class="dropdown-item py-2" href="{% url 'accounts:profile' %}">
+                                            <i class="bi bi-person-vcard text-primary me-2" aria-hidden="true"></i> Ver detalhes
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item py-2" href="{% url 'accounts:edit_profile' %}">
+                                            <i class="bi bi-pencil-square text-warning me-2" aria-hidden="true"></i> Editar perfil
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        {% endif %}
+
+                        <li class="nav-item">
+                            <form method="post" action="{% url 'accounts:logout' %}">
+                                {% csrf_token %}
+                                <button class="btn btn-outline-danger btn-sm w-100" type="submit">Sair</button>
+                            </form>
+                        </li>
+                    {% else %}
+                        <li class="nav-item"><a class="nav-link" href="{% url 'accounts:login' %}">Entrar</a></li>
+                        <li class="nav-item"><a class="btn btn-primary btn-sm px-3 w-100" href="{% url 'accounts:register' %}">Criar conta</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main class="showcase-main {% block main_class %}container my-5{% endblock %}">
+        {% if messages %}
+            <div class="container px-0">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm" role="alert">
+                        <i class="bi bi-info-circle-fill me-2" aria-hidden="true"></i> {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar aviso"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="showcase-footer" id="contato">
+        <div class="container">
+            <div class="row align-items-center mb-4">
+                <div class="col-lg-8 text-center text-lg-start mb-4 mb-lg-0">
+                    <h2 class="h5 text-uppercase fw-bold text-primary mb-4">Globo Vidraçaria</h2>
+
+                    <p class="mb-2 fs-6">
+                        <i class="bi bi-geo-alt-fill text-danger me-2" aria-hidden="true"></i>
+                        <strong>Endereço:</strong> Rodovia Ernesto Acioly, nº 2505 — Bairro Aparecida
+                        <a href="https://maps.app.goo.gl/Fr7DfghdV6aB5Lj29" target="_blank" rel="noopener" class="badge bg-danger text-decoration-none ms-2 p-2 shadow-sm map-btn">
+                            <i class="bi bi-map-fill me-1" aria-hidden="true"></i> Ver no mapa
+                        </a>
+                    </p>
+                    <p class="mb-2 fs-6">
+                        <i class="bi bi-signpost-split-fill text-warning me-2" aria-hidden="true"></i>
+                        <strong>Ponto de referência:</strong> próximo à AABB
+                    </p>
+                    <p class="mb-0 fs-6">
+                        <i class="bi bi-telephone-fill text-success me-2" aria-hidden="true"></i>
+                        <strong>Contatos:</strong> (93) 99108-4346 / (93) 99106-3146 / (93) 3515-4346
+                    </p>
+                </div>
+
+                <div class="col-lg-4 text-center text-lg-end">
+                    <h2 class="h6 text-uppercase fw-bold mb-3 opacity-75">Nossas redes sociais</h2>
+
+                    <a href="https://wa.me/5593991063146" target="_blank" rel="noopener" class="btn btn-success btn-lg rounded-circle me-2 shadow social-btn" aria-label="Fale conosco no WhatsApp" title="WhatsApp">
+                        <i class="bi bi-whatsapp fs-4" aria-hidden="true"></i>
+                    </a>
+                    <a href="https://www.instagram.com/globovidracaria" target="_blank" rel="noopener" class="btn btn-danger btn-lg rounded-circle me-2 shadow social-btn" style="background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285aeb 90%); border: 0;" aria-label="Siga a Globo Vidraçaria no Instagram" title="Instagram">
+                        <i class="bi bi-instagram fs-4" aria-hidden="true"></i>
+                    </a>
+                    <a href="https://www.facebook.com/share/18bVcEA4Lu/" target="_blank" rel="noopener" class="btn btn-primary btn-lg rounded-circle shadow social-btn" style="background-color: #1877f2; border: 0;" aria-label="Curta a Globo Vidraçaria no Facebook" title="Facebook">
+                        <i class="bi bi-facebook fs-4" aria-hidden="true"></i>
+                    </a>
+                </div>
+            </div>
+
+            <hr class="border-secondary opacity-50 my-4">
+
+            <div class="row align-items-center">
+                <div class="col-md-6 text-center text-md-start mb-2 mb-md-0">
+                    <p class="mb-0 fw-bold">&copy; {% now "Y" %} Globo Vidraçaria &amp; Materiais para Construção</p>
+                </div>
+                <div class="col-md-6 text-center text-md-end">
+                    <p class="small opacity-50 mb-0">Desenvolvido por Mayezer S. de Souza / Engenheiro de Software Júnior</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script>
+        (() => {
+            const root = document.documentElement;
+            const buttons = document.querySelectorAll('[data-theme-toggle]');
+
+            function setTheme(theme) {
+                root.setAttribute('data-bs-theme', theme);
+                localStorage.setItem('globo-theme', theme);
+
+                buttons.forEach((button) => {
+                    const isDark = theme === 'dark';
+                    button.setAttribute('aria-label', isDark ? 'Ativar tema claro' : 'Ativar tema escuro');
+                    button.querySelector('i').className = isDark ? 'bi bi-sun-fill' : 'bi bi-moon-stars';
+                });
+            }
+
+            buttons.forEach((button) => {
+                button.addEventListener('click', () => {
+                    setTheme(root.getAttribute('data-bs-theme') === 'light' ? 'dark' : 'light');
+                });
+            });
+
+            setTheme(root.getAttribute('data-bs-theme'));
+        })();
+    </script>
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

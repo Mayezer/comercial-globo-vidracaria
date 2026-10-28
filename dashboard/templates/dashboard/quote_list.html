@@ -1,0 +1,19 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Orçamentos | Painel Globo{% endblock %}
+
+{% block dashboard_content %}
+<header class="dashboard-heading">
+    <div><p class="eyebrow"><i class="bi bi-file-earmark-text"></i> Atendimento</p><h1>Orçamentos</h1><p>Veja os dados completos e acompanhe o andamento de cada solicitação.</p></div>
+</header>
+
+<nav class="admin-filter" aria-label="Filtrar por status">
+    <a class="filter-link{% if not selected_status %} active{% endif %}" href="{% url 'dashboard:quote_list' %}">Todos</a>
+    {% for value, label in status_choices %}<a class="filter-link{% if selected_status == value %} active{% endif %}" href="?status={{ value }}">{{ label }}</a>{% endfor %}
+</nav>
+
+<section class="admin-panel">
+    {% include 'dashboard/_quote_table.html' %}
+</section>
+{% include 'dashboard/_pagination.html' %}
+{% endblock %}

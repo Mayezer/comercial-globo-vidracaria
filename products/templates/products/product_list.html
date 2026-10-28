@@ -1,0 +1,58 @@
+{% extends 'showcase/base.html' %}
+{% load static %}
+
+{% block title %}Produtos em vidro e materiais para construção | Globo Vidraçaria{% endblock %}
+{% block meta_description %}Veja o catálogo de vidros sob medida, box para banheiro, portas, janelas, espelhos e materiais para construção da Globo Vidraçaria.{% endblock %}
+{% block og_title %}Catálogo de produtos | Globo Vidraçaria{% endblock %}
+{% block og_description %}Produtos em vidro, alumínio e acrílico, espelhos e materiais para construção.{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'products/css/catalog.css' %}">
+<style>
+    .catalog-header {
+        max-width: 720px;
+        margin-bottom: 2rem;
+    }
+    .catalog-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: .5rem;
+        margin-bottom: .65rem;
+        color: var(--primary-color);
+        font-size: .78rem;
+        font-weight: 800;
+        letter-spacing: .12em;
+        text-transform: uppercase;
+    }
+    .empty-catalog {
+        padding: clamp(2.5rem, 8vw, 5rem) 1.5rem;
+        text-align: center;
+        border: 1px dashed var(--bs-border-color);
+        border-radius: 1.1rem;
+    }
+    .empty-catalog i { color: var(--primary-color); font-size: 3rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<header class="catalog-header">
+    <span class="catalog-eyebrow"><i class="bi bi-grid" aria-hidden="true"></i> Nosso catálogo</span>
+    <h1 class="display-6 fw-bold mb-2">Vidros sob medida e materiais para construção</h1>
+    <p class="lead text-body-secondary mb-0">Conheça produtos para projetos com vidro, como box para banheiro, portas, janelas e espelhos, além de materiais para construção.</p>
+</header>
+
+{% if products %}
+    <section class="row g-4" aria-label="Vitrine de produtos">
+        {% for product in products %}
+            {% include 'products/_product_card.html' %}
+        {% endfor %}
+    </section>
+    {% include 'showcase/_pagination.html' with page_label='produtos' %}
+{% else %}
+    <section class="empty-catalog" aria-label="Catálogo vazio">
+        <i class="bi bi-box-seam" aria-hidden="true"></i>
+        <h2 class="h4 mt-3">Novidades em breve</h2>
+        <p class="text-body-secondary mb-0">Ainda não há produtos publicados no catálogo.</p>
+    </section>
+{% endif %}
+{% endblock %}

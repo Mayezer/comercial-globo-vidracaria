@@ -1,0 +1,6 @@
+{% extends 'dashboard/base.html' %}
+{% block title %}Cancelar {{ sale.number }} | Painel Globo{% endblock %}
+{% block dashboard_content %}
+<header class="dashboard-heading"><div><p class="eyebrow"><i class="bi bi-x-octagon"></i> Cancelamento</p><h1>Cancelar {{ sale.number }}</h1><p>O histórico será preservado, os produtos voltarão ao estoque e uma saída de estorno será criada no caixa.</p></div><a class="button secondary" href="{% url 'sales:detail' sale.pk %}"><i class="bi bi-arrow-left"></i> Voltar</a></header>
+<section class="card admin-form-card"><header class="card-header"><h2>Confirmar estorno de R$ {{ sale.total|floatformat:2 }}</h2></header><div class="card-body"><form method="post" novalidate>{% csrf_token %}{% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}{% for field in form %}{% include 'sales/_form_field.html' %}{% endfor %}<div class="button-row end"><a class="button secondary" href="{% url 'sales:detail' sale.pk %}">Não cancelar</a><button class="button danger" type="submit" onclick="return confirm('Confirmar cancelamento e estorno?');"><i class="bi bi-arrow-counterclockwise"></i> Cancelar e estornar</button></div></form></div></section>
+{% endblock %}

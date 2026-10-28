@@ -1,0 +1,26 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Painel administrativo | Globo Vidraçaria{% endblock %}
+
+{% block dashboard_content %}
+<header class="dashboard-heading">
+    <div>
+        <p class="eyebrow"><i class="bi bi-shield-check"></i> Gestão da vidraçaria</p>
+        <h1>Visão geral</h1>
+        <p>Acompanhe os pedidos e cadastros mais importantes em um só lugar.</p>
+    </div>
+    <a class="button" href="{% url 'dashboard:quote_list' %}"><i class="bi bi-file-earmark-text"></i> Ver orçamentos</a>
+</header>
+
+<section class="stat-grid" aria-label="Resumo do painel">
+    <article class="stat-card"><div><span>Aguardando atendimento</span><i class="bi bi-hourglass-split"></i></div><strong>{{ pending_count }}</strong><span>Orçamentos pendentes</span></article>
+    <article class="stat-card"><div><span>Finalizados</span><i class="bi bi-check2-circle"></i></div><strong>{{ completed_count }}</strong><span>Orçamentos concluídos</span></article>
+    <article class="stat-card"><div><span>Cancelados</span><i class="bi bi-x-circle"></i></div><strong>{{ cancelled_count }}</strong><span>Orçamentos cancelados</span></article>
+    <article class="stat-card"><div><span>Base de clientes</span><i class="bi bi-people"></i></div><strong>{{ customer_count }}</strong><span>Clientes cadastrados</span></article>
+</section>
+
+<section class="admin-panel">
+    <header class="admin-panel-head"><h2>Solicitações recentes</h2><a href="{% url 'dashboard:quote_list' %}">Ver todas <i class="bi bi-arrow-right"></i></a></header>
+    {% include 'dashboard/_quote_table.html' %}
+</section>
+{% endblock %}

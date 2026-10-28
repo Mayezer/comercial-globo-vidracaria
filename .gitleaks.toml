@@ -1,0 +1,16 @@
+title = "Globo Vidraçaria: detecção de segredos"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "generic-api-key"
+
+  # Apenas quatro senhas fictícias já revisadas, somente nos arquivos de teste.
+  # Outros valores nesses arquivos continuam sujeitos à detecção normal.
+  [[rules.allowlists]]
+  description = "Senhas artificiais usadas nos testes automatizados"
+  condition = "AND"
+  regexTarget = "secret"
+  paths = ['''(^|/)(accounts/tests\.py|app/test_security\.py|calculator/tests\.py|dashboard/tests\.py|glazing_services/tests\.py|products/tests\.py|sales/tests\.py|showcase/tests\.py)$''']
+  regexes = ['''^(Senha-Forte-2026|Outra-Senha-2026|Senha-Diferente-2026|Nova-Senha-Forte-2026)$''']

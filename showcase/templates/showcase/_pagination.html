@@ -1,0 +1,39 @@
+{% if page_obj.has_other_pages %}
+<nav class="catalog-pagination" aria-label="Páginas de {{ page_label }}">
+    <ul class="pagination justify-content-center flex-wrap gap-2 mb-0">
+        <li class="page-item{% if not page_obj.has_previous %} disabled{% endif %}">
+            {% if page_obj.has_previous %}
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Página anterior">
+                    <i class="bi bi-chevron-left" aria-hidden="true"></i>
+                    <span class="visually-hidden">Anterior</span>
+                </a>
+            {% else %}
+                <span class="page-link" aria-hidden="true"><i class="bi bi-chevron-left"></i></span>
+            {% endif %}
+        </li>
+
+        {% for page_number in page_obj.paginator.page_range %}
+            <li class="page-item{% if page_number == page_obj.number %} active{% endif %}">
+                {% if page_number == page_obj.number %}
+                    <span class="page-link" aria-current="page">
+                        <span class="visually-hidden">Página atual: </span>{{ page_number }}
+                    </span>
+                {% else %}
+                    <a class="page-link" href="?page={{ page_number }}" aria-label="Ir para a página {{ page_number }}">{{ page_number }}</a>
+                {% endif %}
+            </li>
+        {% endfor %}
+
+        <li class="page-item{% if not page_obj.has_next %} disabled{% endif %}">
+            {% if page_obj.has_next %}
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Próxima página">
+                    <i class="bi bi-chevron-right" aria-hidden="true"></i>
+                    <span class="visually-hidden">Próxima</span>
+                </a>
+            {% else %}
+                <span class="page-link" aria-hidden="true"><i class="bi bi-chevron-right"></i></span>
+            {% endif %}
+        </li>
+    </ul>
+</nav>
+{% endif %}

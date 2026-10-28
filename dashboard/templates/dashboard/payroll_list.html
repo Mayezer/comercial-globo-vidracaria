@@ -1,0 +1,92 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Folhas de pagamento | Painel Globo{% endblock %}
+
+{% block dashboard_content %}
+<header class="dashboard-heading">
+    <div>
+        <p class="eyebrow"><i class="bi bi-file-earmark-person"></i> Equipe e financeiro</p>
+        <h1>Folhas de pagamento</h1>
+        <p>Gere recibos a partir do salário cadastrado e imprima o PDF para assinatura.</p>
+    </div>
+    <a class="button" href="{% url 'dashboard:payroll_create' %}?month={{ selected_month_value }}"><i class="bi bi-plus-lg"></i> Nova folha detalhada</a>
+</header>
+
+<div class="linked-note">
+    <i class="bi bi-arrow-left-right" aria-hidden="true"></i>
+    <p>Ao gerar uma folha, o valor líquido entra automaticamente como saída no faturamento mensal.</p>
+</div>
+
+<form class="date-filter" method="get">
+    <div class="form-field">
+        <label for="payroll-month">Competência</label>
+        <input id="payroll-month" type="month" name="month" value="{{ selected_month_value }}">
+    </div>
+    <button class="button secondary" type="submit"><i class="bi bi-search"></i> Consultar</button>
+</form>
+
+<section class="finance-summary" aria-label="Resumo da folha">
+    <article class="finance-card expense"><span>Total líquido da competência</span><strong>R$ {{ net_total|floatformat:2 }}</strong></article>
+    <article class="finance-card"><span>Folhas geradas</span><strong>{{ payrolls|length }}</strong></article>
+    <article class="finance-card balance"><span>Competência</span><strong>{{ selected_month|date:'m/Y' }}</strong></article>
+</section>
+
+<section class="admin-panel">
+    <header class="admin-panel-head"><h2>Equipe</h2><span>Geração rápida com o salário cadastrado</span></header>
+    {% if employee_rows %}
+        <div class="employee-grid">
+            {% for row in employee_rows %}
+            <article class="employee-card">
+                {% if row.employee.photo %}<img src="{{ row.employee.photo.url }}" alt="Foto de {{ row.employee.full_name }}">{% else %}<div class="employee-avatar" aria-hidden="true"><i class="bi bi-person"></i></div>{% endif %}
+                <div class="employee-copy">
+                    <h2>{{ row.employee.full_name }}</h2>
+                    <p>Salário cadastrado: R$ {{ row.employee.monthly_salary|floatformat:2 }}</p>
+                    {% if row.payroll %}<span class="status-badge status-completed"><i class="bi bi-check-circle"></i> Folha pronta</span>{% else %}<span class="status-badge status-pending">Aguardando geração</span>{% endif %}
+                </div>
+                <div class="table-actions">
+                    {% if row.payroll %}
+                        <a class="button small" target="_blank" rel="noopener" href="{% url 'dashboard:payroll_pdf' row.payroll.pk %}"><i class="bi bi-printer"></i> Abrir PDF e imprimir</a>
+                        <a class="button secondary small" href="{% url 'dashboard:payroll_edit' row.payroll.pk %}"><i class="bi bi-pencil"></i> Ajustar</a>
+                    {% else %}
+                        <form method="post" action="{% url 'dashboard:payroll_quick_create' row.employee.pk %}">
+                            {% csrf_token %}<input type="hidden" name="month" value="{{ selected_month_value }}">
+                            <button class="button small" type="submit"><i class="bi bi-file-earmark-check"></i> Gerar folha</button>
+                        </form>
+                        <a class="button secondary small" href="{% url 'dashboard:payroll_create' %}?employee={{ row.employee.pk }}&month={{ selected_month_value }}"><i class="bi bi-sliders"></i> Gerar com ajustes</a>
+                    {% endif %}
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state"><i class="bi bi-person-vcard"></i><strong>Nenhum funcionário cadastrado.</strong><p>Cadastre a equipe antes de gerar folhas de pagamento.</p></div>
+    {% endif %}
+</section>
+
+{% if payrolls %}
+<section class="admin-panel section-gap">
+    <header class="admin-panel-head"><h2>Folhas geradas</h2><span>{{ selected_month|date:'F \d\e Y'|capfirst }}</span></header>
+    <div class="admin-table-wrap">
+        <table class="admin-table">
+            <thead><tr><th>Funcionário</th><th>Base</th><th>Acréscimos</th><th>Descontos</th><th>Líquido</th><th>Ações</th></tr></thead>
+            <tbody>
+                {% for payroll in payrolls %}
+                <tr>
+                    <td><strong>{{ payroll.employee_name }}</strong><br><small>{{ payroll.formatted_employee_cpf }}</small></td>
+                    <td>R$ {{ payroll.gross_salary|floatformat:2 }}</td>
+                    <td>R$ {{ payroll.additions|floatformat:2 }}</td>
+                    <td>R$ {{ payroll.deductions|floatformat:2 }}</td>
+                    <td class="money-cell">R$ {{ payroll.net_salary|floatformat:2 }}</td>
+                    <td><div class="table-actions">
+                        <a class="button small" target="_blank" rel="noopener" href="{% url 'dashboard:payroll_pdf' payroll.pk %}"><i class="bi bi-printer"></i> PDF</a>
+                        <a class="button secondary small" href="{% url 'dashboard:payroll_edit' payroll.pk %}"><i class="bi bi-pencil"></i> Editar</a>
+                        <form method="post" action="{% url 'dashboard:payroll_delete' payroll.pk %}" onsubmit="return confirm('Excluir esta folha e sua saída no faturamento?');">{% csrf_token %}<button class="button danger small" type="submit"><i class="bi bi-trash3"></i> Excluir</button></form>
+                    </div></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endif %}
+{% endblock %}

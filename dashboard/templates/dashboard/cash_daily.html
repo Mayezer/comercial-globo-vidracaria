@@ -1,0 +1,71 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Caixa diário | Painel Globo{% endblock %}
+
+{% block dashboard_content %}
+<header class="dashboard-heading">
+    <div>
+        <p class="eyebrow"><i class="bi bi-cash-stack"></i> Financeiro</p>
+        <h1>Caixa diário</h1>
+        <p>Registre e confira todas as entradas e saídas do dia.</p>
+    </div>
+    <a class="button" href="{% url 'dashboard:cash_transaction_create' %}?date={{ selected_date|date:'Y-m-d' }}"><i class="bi bi-plus-lg"></i> Novo lançamento</a>
+</header>
+
+<form class="date-filter" method="get">
+    <div class="form-field">
+        <label for="cash-date">Data do caixa</label>
+        <input id="cash-date" type="date" name="date" value="{{ selected_date|date:'Y-m-d' }}">
+    </div>
+    <button class="button secondary" type="submit"><i class="bi bi-search"></i> Consultar</button>
+</form>
+
+<section class="finance-summary" aria-label="Resumo do caixa">
+    <article class="finance-card income"><span>Entradas</span><strong>R$ {{ income_total|floatformat:2 }}</strong></article>
+    <article class="finance-card expense"><span>Saídas</span><strong>R$ {{ expense_total|floatformat:2 }}</strong></article>
+    <article class="finance-card balance"><span>Saldo do dia</span><strong>R$ {{ balance|floatformat:2 }}</strong></article>
+</section>
+
+<section class="admin-panel">
+    <header class="admin-panel-head"><h2>Lançamentos de {{ selected_date|date:'d/m/Y' }}</h2><span>{{ transactions|length }} registro{{ transactions|length|pluralize }}</span></header>
+    {% if transactions %}
+        <div class="admin-table-wrap">
+            <table class="admin-table">
+                <thead><tr><th>Tipo</th><th>Descrição</th><th>Pagamento</th><th>Valor</th><th>Responsável</th><th>Ações</th></tr></thead>
+                <tbody>
+                    {% for transaction in transactions %}
+                    <tr>
+                        <td><span class="transaction-kind {{ transaction.kind }}">{{ transaction.get_kind_display }}</span></td>
+                        <td><strong>{{ transaction.description }}</strong>{% if transaction.notes %}<br><small>{{ transaction.notes|truncatechars:90 }}</small>{% endif %}</td>
+                        <td>{{ transaction.get_payment_method_display }}</td>
+                        <td><strong>R$ {{ transaction.amount|floatformat:2 }}</strong></td>
+                        <td>{{ transaction.created_by.get_full_name|default:transaction.created_by.username|default:'Usuário removido' }}</td>
+                        <td>
+                            <div class="table-actions">
+                                {% if transaction.managed_expense %}
+                                    <a class="button secondary small" href="{% url 'dashboard:expense_edit' transaction.managed_expense.pk %}"><i class="bi bi-receipt-cutoff"></i> Ver gasto</a>
+                                {% elif transaction.payroll %}
+                                    <a class="button secondary small" href="{% url 'dashboard:payroll_edit' transaction.payroll.pk %}"><i class="bi bi-file-earmark-person"></i> Ver folha</a>
+                                {% elif transaction.sale_payment %}
+                                    <a class="button secondary small" href="{% url 'sales:detail' transaction.sale_payment.pk %}"><i class="bi bi-cart-check"></i> Ver venda</a>
+                                {% elif transaction.sale_reversal %}
+                                    <a class="button secondary small" href="{% url 'sales:detail' transaction.sale_reversal.pk %}"><i class="bi bi-arrow-counterclockwise"></i> Ver estorno</a>
+                                {% else %}
+                                    <a class="button secondary small" href="{% url 'dashboard:cash_transaction_edit' transaction.pk %}"><i class="bi bi-pencil"></i> Editar</a>
+                                    <form method="post" action="{% url 'dashboard:cash_transaction_delete' transaction.pk %}" onsubmit="return confirm('Excluir este lançamento?');">
+                                        {% csrf_token %}
+                                        <button class="button danger small" type="submit"><i class="bi bi-trash3"></i> Excluir</button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="empty-state"><i class="bi bi-receipt"></i><strong>Nenhum lançamento nesta data.</strong><p>Use “Novo lançamento” para iniciar o caixa do dia.</p></div>
+    {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,21 @@
+<dialog id="delete-account-dialog" aria-labelledby="delete-account-title" aria-describedby="delete-account-description">
+    <div class="dialog-body">
+        <div class="danger-icon" aria-hidden="true"><i class="bi bi-exclamation-triangle-fill"></i></div>
+        <h2 id="delete-account-title">Atenção!</h2>
+        <p id="delete-account-description">
+            Tem certeza de que deseja excluir permanentemente a conta
+            <strong>{{ profile.email }}</strong>?
+        </p>
+        <div class="danger-note">
+            <i class="bi bi-info-circle" aria-hidden="true"></i>
+            Esta ação é irreversível. Seus dados pessoais, endereço e acesso serão apagados do sistema.
+        </div>
+        <div class="dialog-actions">
+            <button class="button secondary" type="button" data-close-delete>Cancelar</button>
+            <form method="post" action="{% url 'accounts:delete_account' %}">
+                {% csrf_token %}
+                <button class="button danger" type="submit"><i class="bi bi-trash-fill" aria-hidden="true"></i> Sim, excluir</button>
+            </form>
+        </div>
+    </div>
+</dialog>

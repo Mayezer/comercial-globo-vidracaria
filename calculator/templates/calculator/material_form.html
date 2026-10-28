@@ -1,0 +1,39 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}{% if material %}Editar{% else %}Novo{% endif %} material | Calculadora{% endblock %}
+
+{% block dashboard_content %}
+<header class="dashboard-heading">
+    <div>
+        <p class="eyebrow"><i class="bi bi-layers"></i> Calculadora</p>
+        <h1>{% if material %}Editar material{% else %}Cadastrar material{% endif %}</h1>
+        <p>Defina como o material é medido e o valor cobrado por unidade.</p>
+    </div>
+    <a class="button secondary" href="{% url 'calculator:home' %}"><i class="bi bi-arrow-left"></i> Voltar</a>
+</header>
+
+<section class="card admin-form-card">
+    <header class="card-header"><h2>Dados do material</h2><p>Use metro quadrado para largura × altura ou metro linear para comprimento reto.</p></header>
+    <div class="card-body">
+        <form method="post" novalidate>
+            {% csrf_token %}
+            {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+            <div class="admin-form">
+                {% for field in form %}
+                    <div class="form-field">
+                        <label for="{{ field.id_for_label }}">{{ field.label }} <span class="required-mark" aria-hidden="true">*</span></label>
+                        {{ field }}
+                        {% if field.help_text %}<span class="helptext">{{ field.help_text }}</span>{% endif %}
+                        {% for error in field.errors %}<p class="errorlist">{{ error }}</p>{% endfor %}
+                    </div>
+                {% endfor %}
+            </div>
+            <div class="button-row end">
+                <a class="button secondary" href="{% url 'calculator:home' %}">Cancelar</a>
+                <button class="button secondary" type="submit" name="save_and_add_another" value="1"><i class="bi bi-plus-circle"></i> Salvar e adicionar outro</button>
+                <button class="button" type="submit"><i class="bi bi-floppy"></i> Salvar material</button>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}

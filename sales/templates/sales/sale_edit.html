@@ -1,0 +1,68 @@
+{% extends 'dashboard/base.html' %}
+{% block title %}Editar {{ sale.number }} | Painel Globo{% endblock %}
+
+{% block dashboard_content %}
+<header class="dashboard-heading">
+    <div><p class="eyebrow"><i class="bi bi-cart-check"></i> {{ sale.number }}</p><h1>Montar venda</h1><p>Rascunho iniciado em {{ sale.created_at|date:'d/m/Y' }} às {{ sale.created_at|date:'H:i' }}.</p></div>
+    <div class="button-row"><a class="button secondary" href="{% url 'sales:list' %}"><i class="bi bi-arrow-left"></i> Lista</a><a class="button" href="{% url 'sales:review' sale.pk %}"><i class="bi bi-clipboard-check"></i> Conferir venda</a></div>
+</header>
+
+<div class="sales-stack">
+    <section class="card admin-form-card"><header class="card-header"><h2>Cliente, desconto e pagamento</h2></header><div class="card-body">
+        <form method="post" novalidate>{% csrf_token %}<input type="hidden" name="action" value="save_sale">
+            {% include 'sales/_sale_form.html' with form=sale_form %}
+            <div class="button-row end"><button class="button" type="submit"><i class="bi bi-floppy"></i> Salvar dados</button></div>
+        </form>
+    </div></section>
+
+    <section class="admin-panel sale-section">
+        <div class="sale-section-head"><div><h2><i class="bi bi-bag"></i> Itens da venda</h2><p>Preços e descrições ficam congelados no item.</p></div><span>{{ sale.items.count }} item{{ sale.items.count|pluralize }}</span></div>
+        <ul class="sale-item-list">
+            {% for item in sale.items.all %}
+            <li class="sale-item">
+                <div><strong>{{ item.description }}</strong><small>{{ item.get_item_type_display }} · {% if item.item_type == 'material' %}{{ item.width_mm|floatformat:2 }} × {{ item.height_mm|floatformat:2 }} mm · {{ item.piece_count }} peça{{ item.piece_count|pluralize }} · {{ item.area_sqm|floatformat:6 }} m²{% else %}{{ item.quantity|floatformat:'-6' }} {{ item.get_unit_display }}{% endif %} · R$ {{ item.unit_price|floatformat:2 }}{% if item.discount %} · desconto R$ {{ item.discount|floatformat:2 }}{% endif %}</small></div>
+                <div class="sale-item-value"><strong>R$ {{ item.total|floatformat:2 }}</strong><form method="post" action="{% url 'sales:item_remove' sale.pk item.pk %}" onsubmit="return confirm('Remover este item?');">{% csrf_token %}<button class="button danger small" type="submit"><i class="bi bi-trash3"></i> Remover</button></form></div>
+            </li>
+            {% empty %}<li class="empty-state"><i class="bi bi-cart-x"></i><strong>Nenhum item incluído.</strong><p>Use um dos formulários abaixo.</p></li>{% endfor %}
+        </ul>
+    </section>
+
+    <section class="item-forms" aria-label="Adicionar itens">
+        <article class="item-form-card"><h2><i class="bi bi-box-seam"></i> Produto</h2><p>O preço atual do cadastro será congelado e o estoque baixará na conclusão.</p><form class="compact-form" method="post" novalidate>{% csrf_token %}<input type="hidden" name="action" value="add_product">{% if product_form.non_field_errors %}<div class="alert alert-danger">{{ product_form.non_field_errors }}</div>{% endif %}{% for field in product_form %}{% include 'sales/_form_field.html' %}{% endfor %}<button class="button" type="submit"><i class="bi bi-plus-lg"></i> Incluir produto</button></form></article>
+        <article class="item-form-card"><h2><i class="bi bi-bounding-box"></i> Material por m²</h2><p>Informe as medidas em milímetros. Área = largura × altura × peças.</p><form class="compact-form" method="post" novalidate data-material-form>{% csrf_token %}<input type="hidden" name="action" value="add_material">{% if material_form.non_field_errors %}<div class="alert alert-danger">{{ material_form.non_field_errors }}</div>{% endif %}{% for field in material_form %}{% include 'sales/_form_field.html' %}{% endfor %}<div class="area-preview" data-area-preview>Área: 0,000000 m² · Prévia: R$ 0,00</div><button class="button" type="submit"><i class="bi bi-plus-lg"></i> Incluir material</button></form></article>
+        <article class="item-form-card"><h2><i class="bi bi-tools"></i> Serviço</h2><p>Defina a quantidade e o preço negociado para este serviço.</p><form class="compact-form" method="post" novalidate>{% csrf_token %}<input type="hidden" name="action" value="add_service">{% if service_form.non_field_errors %}<div class="alert alert-danger">{{ service_form.non_field_errors }}</div>{% endif %}{% for field in service_form %}{% include 'sales/_form_field.html' %}{% endfor %}<button class="button" type="submit"><i class="bi bi-plus-lg"></i> Incluir serviço</button></form></article>
+    </section>
+
+    <section class="admin-panel sale-section">
+        <div class="sale-section-head"><h2>Resumo atual</h2><a class="button" href="{% url 'sales:review' sale.pk %}">Conferir antes de concluir <i class="bi bi-arrow-right"></i></a></div>
+        <dl class="sale-summary"><div><dt>Subtotal dos itens</dt><dd>R$ {{ sale.subtotal|floatformat:2 }}</dd></div><div><dt>Desconto geral</dt><dd>− R$ {{ sale.discount|floatformat:2 }}</dd></div><div class="grand-total"><dt>Total</dt><dd>R$ {{ sale.total|floatformat:2 }}</dd></div></dl>
+    </section>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+{{ block.super }}{% include 'sales/_customer_script.html' %}
+<script>
+(() => {
+    const form = document.querySelector('[data-material-form]');
+    if (!form) return;
+    const width = document.getElementById('id_material-width_mm');
+    const height = document.getElementById('id_material-height_mm');
+    const pieces = document.getElementById('id_material-piece_count');
+    const price = document.getElementById('id_material-unit_price');
+    const preview = form.querySelector('[data-area-preview]');
+    const parse = (value) => {
+        const raw = String(value || '0').trim();
+        const normalized = raw.includes(',') ? raw.replaceAll('.', '').replace(',', '.') : raw;
+        return Number(normalized) || 0;
+    };
+    const update = () => {
+        const area = parse(width.value) * parse(height.value) * parse(pieces.value) / 1000000;
+        const total = area * parse(price.value);
+        preview.textContent = `Área: ${area.toLocaleString('pt-BR', {minimumFractionDigits: 6, maximumFractionDigits: 6})} m² · Prévia: ${total.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'})}`;
+    };
+    [width, height, pieces, price].forEach((field) => field.addEventListener('input', update));
+    update();
+})();
+</script>
+{% endblock %}

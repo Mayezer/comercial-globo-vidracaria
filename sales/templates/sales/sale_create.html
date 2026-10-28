@@ -1,0 +1,17 @@
+{% extends 'dashboard/base.html' %}
+{% block title %}Nova venda | Painel Globo{% endblock %}
+
+{% block dashboard_content %}
+<header class="dashboard-heading">
+    <div><p class="eyebrow"><i class="bi bi-cart-plus"></i> Vendas</p><h1>Nova venda</h1><p>Comece pelos dados do cliente; a venda será salva como rascunho.</p></div>
+    <a class="button secondary" href="{% url 'sales:list' %}"><i class="bi bi-arrow-left"></i> Voltar</a>
+</header>
+<section class="card admin-form-card"><header class="card-header"><h2>Cliente e condições da venda</h2></header><div class="card-body">
+    <form method="post" novalidate>{% csrf_token %}
+        {% include 'sales/_sale_form.html' with form=form %}
+        <div class="button-row end"><a class="button secondary" href="{% url 'sales:list' %}">Cancelar</a><button class="button" type="submit"><i class="bi bi-floppy"></i> Criar rascunho</button></div>
+    </form>
+</div></section>
+{% endblock %}
+
+{% block extra_scripts %}{{ block.super }}{% include 'sales/_customer_script.html' %}{% endblock %}

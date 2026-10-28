@@ -1,0 +1,51 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Serviços | Painel Globo{% endblock %}
+
+{% block dashboard_content %}
+<header class="dashboard-heading">
+    <div>
+        <p class="eyebrow"><i class="bi bi-tools"></i> Catálogo</p>
+        <h1>Serviços</h1>
+        <p>Cadastre, edite e exclua os serviços oferecidos pela vidraçaria.</p>
+    </div>
+    <a class="button" href="{% url 'dashboard:service_create' %}"><i class="bi bi-plus-lg"></i> Novo serviço</a>
+</header>
+
+<section class="admin-panel">
+    {% if services %}
+        <div class="admin-table-wrap">
+            <table class="admin-table">
+                <thead><tr><th>Serviço</th><th>Tipo</th><th>Vitrine do cliente</th><th>Descrição</th><th>Ações</th></tr></thead>
+                <tbody>
+                    {% for service in services %}
+                    <tr>
+                        <td><strong>{{ service.name }}</strong></td>
+                        <td>{{ service.service_type }}</td>
+                        <td>
+                            {% if service.show_in_showcase %}
+                                <span class="status-badge status-completed"><i class="bi bi-eye"></i> Visível</span>
+                            {% else %}
+                                <span class="status-badge status-cancelled"><i class="bi bi-eye-slash"></i> Oculto</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ service.description|truncatechars:90|default:'Sem descrição' }}</td>
+                        <td>
+                            <div class="table-actions">
+                                <a class="button secondary small" href="{% url 'dashboard:service_edit' service.pk %}"><i class="bi bi-pencil"></i> Editar</a>
+                                <form method="post" action="{% url 'dashboard:service_delete' service.pk %}" onsubmit="return confirm('Excluir o serviço {{ service.name|escapejs }}?');">
+                                    {% csrf_token %}
+                                    <button class="button danger small" type="submit"><i class="bi bi-trash3"></i> Excluir</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="empty-state"><i class="bi bi-tools"></i><strong>Nenhum serviço cadastrado.</strong></div>
+    {% endif %}
+</section>
+{% endblock %}

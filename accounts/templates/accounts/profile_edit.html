@@ -1,0 +1,178 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar perfil | Globo Vidraçaria{% endblock %}
+
+{% block extra_head %}
+<style>
+    .edit-wrap { width: min(100%, 920px); margin-inline: auto; }
+    .edit-card .card-header { text-align: center; }
+    .edit-card .card-header i { margin-right: .45rem; }
+    .edit-card form { display: grid; gap: 0; }
+    .photo-editor { grid-column: 1 / -1; display: flex; align-items: center; gap: 1rem; padding: 1rem; background: var(--surface-soft); border: 1px solid var(--border); border-radius: .9rem; }
+    .photo-preview { width: 76px; height: 76px; display: grid; place-items: center; flex: 0 0 auto; color: var(--brand); background: var(--brand-soft); border: 3px solid var(--surface); border-radius: 50%; box-shadow: var(--shadow-sm); overflow: hidden; font-size: 2rem; }
+    .photo-preview img { width: 100%; height: 100%; object-fit: cover; }
+    .photo-editor .form-field { width: 100%; flex: 1; }
+    .custom-file-control { display: flex; align-items: center; gap: .75rem; min-height: 50px; padding: .35rem; background: var(--surface); border: 1.5px solid var(--border); border-radius: .72rem; }
+    #id_profile_photo { position: absolute !important; width: 1px !important; height: 1px !important; min-height: 0 !important; padding: 0 !important; margin: -1px !important; overflow: hidden !important; clip: rect(0, 0, 0, 0) !important; white-space: nowrap !important; border: 0 !important; }
+    .file-select-button { min-height: 40px; display: inline-flex; align-items: center; justify-content: center; gap: .45rem; flex: 0 0 auto; margin: 0 !important; padding: .58rem .8rem; color: #fff !important; background: var(--brand); border-radius: .55rem; cursor: pointer; font-size: .86rem !important; font-weight: 800 !important; }
+    .file-select-button:hover { background: var(--brand-strong); }
+    #id_profile_photo:focus-visible + .file-select-button { outline: 3px solid color-mix(in srgb, var(--brand) 38%, transparent); outline-offset: 3px; }
+    .file-name { min-width: 0; color: var(--muted); font-size: .84rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .current-photo { display: inline-block; margin: .35rem 0 0; color: var(--muted); font-size: .78rem; }
+    .edit-note { display: flex; align-items: flex-start; gap: .6rem; margin-bottom: 1.2rem; padding: .8rem .9rem; color: var(--muted); background: var(--surface-soft); border-radius: .75rem; font-size: .84rem; }
+    @media (max-width: 560px) {
+        .photo-editor { align-items: flex-start; flex-direction: column; }
+        .button-row.end { flex-direction: column-reverse; }
+        .button-row.end .button { width: 100%; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="edit-wrap">
+    <section class="card edit-card" aria-labelledby="edit-title">
+        <header class="card-header warning">
+            <h1 id="edit-title"><i class="bi bi-person-gear" aria-hidden="true"></i> Atualizar meus dados</h1>
+            <p>Mantenha suas informações de contato sempre corretas.</p>
+        </header>
+
+        <div class="card-body">
+            {% if completing_for_quote %}
+            <div class="alert alert-warning" role="alert">
+                <i class="bi bi-geo-alt-fill" aria-hidden="true"></i>
+                <div><strong>Complete o endereço para continuar.</strong><br>Rua, bairro e número são obrigatórios para solicitar orçamento.</div>
+            </div>
+            {% endif %}
+            <div class="edit-note">
+                <i class="bi bi-info-circle" aria-hidden="true"></i>
+                <span>Seu {% if profile.account_type == 'PF' %}CPF{% else %}CNPJ{% endif %} e o e-mail de confirmação não podem ser alterados nesta página.</span>
+            </div>
+
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger" role="alert">
+                    <i class="bi bi-exclamation-circle-fill" aria-hidden="true"></i>
+                    <div>{{ form.non_field_errors }}</div>
+                </div>
+            {% endif %}
+
+            <form method="post" enctype="multipart/form-data" novalidate>
+                {% csrf_token %}
+                <div class="form-grid">
+                    <div class="section-divider"><i class="bi bi-person-fill" aria-hidden="true"></i> Identificação</div>
+
+                    <div class="form-field{% if profile.account_type == 'PF' %} full{% endif %}">
+                        <label for="{{ form.full_name.id_for_label }}">{{ form.full_name.label }}</label>
+                        {{ form.full_name }}
+                        {% for error in form.full_name.errors %}<p class="errorlist">{{ error }}</p>{% endfor %}
+                    </div>
+
+                    {% if profile.account_type == 'PJ' %}
+                        <div class="form-field">
+                            <label for="{{ form.corporate_name.id_for_label }}">{{ form.corporate_name.label }}</label>
+                            {{ form.corporate_name }}
+                            {% for error in form.corporate_name.errors %}<p class="errorlist">{{ error }}</p>{% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <div class="section-divider"><i class="bi bi-geo-alt-fill" aria-hidden="true"></i> Endereço</div>
+
+                    <div class="form-field full">
+                        <label for="{{ form.street.id_for_label }}">{{ form.street.label }}{% if completing_for_quote %} <span class="required-mark">*</span>{% endif %}</label>
+                        {{ form.street }}
+                        {% for error in form.street.errors %}<p class="errorlist">{{ error }}</p>{% endfor %}
+                    </div>
+
+                    <div class="form-field">
+                        <label for="{{ form.neighborhood.id_for_label }}">{{ form.neighborhood.label }}{% if completing_for_quote %} <span class="required-mark">*</span>{% endif %}</label>
+                        {{ form.neighborhood }}
+                        {% for error in form.neighborhood.errors %}<p class="errorlist">{{ error }}</p>{% endfor %}
+                    </div>
+
+                    <div class="form-field">
+                        <label for="{{ form.house_number.id_for_label }}">{{ form.house_number.label }}{% if completing_for_quote %} <span class="required-mark">*</span>{% endif %}</label>
+                        {{ form.house_number }}
+                        {% for error in form.house_number.errors %}<p class="errorlist">{{ error }}</p>{% endfor %}
+                    </div>
+
+                    <div class="form-field full">
+                        <label for="{{ form.reference_point.id_for_label }}">{{ form.reference_point.label }}</label>
+                        {{ form.reference_point }}
+                        {% for error in form.reference_point.errors %}<p class="errorlist">{{ error }}</p>{% endfor %}
+                    </div>
+
+                    <div class="section-divider"><i class="bi bi-telephone-fill" aria-hidden="true"></i> Contato e foto</div>
+
+                    <div class="form-field full">
+                        <label for="{{ form.phone.id_for_label }}">{{ form.phone.label }}</label>
+                        {{ form.phone }}
+                        {% if form.phone.help_text %}<span class="helptext">{{ form.phone.help_text }}</span>{% endif %}
+                        {% for error in form.phone.errors %}<p class="errorlist">{{ error }}</p>{% endfor %}
+                    </div>
+
+                    <div class="photo-editor">
+                        <div class="photo-preview" id="photo-preview">
+                            {% if profile.profile_photo %}
+                                <img src="{{ profile.profile_photo.url }}" alt="Foto atual do perfil">
+                            {% else %}
+                                <i class="bi bi-person" aria-hidden="true"></i>
+                            {% endif %}
+                        </div>
+                        <div class="form-field">
+                            <span class="field-label">{{ form.profile_photo.label }}</span>
+                            <div class="custom-file-control">
+                                {{ form.profile_photo }}
+                                <label class="file-select-button" for="{{ form.profile_photo.id_for_label }}">
+                                    <i class="bi bi-image" aria-hidden="true"></i> Selecionar foto
+                                </label>
+                                <span class="file-name" id="profile-photo-name">Nenhuma foto selecionada</span>
+                            </div>
+                            <span class="helptext">JPG, PNG ou WEBP com no máximo 5 MB.</span>
+                            {% if profile.profile_photo %}<a class="current-photo" href="{{ profile.profile_photo.url }}" target="_blank" rel="noopener">Visualizar imagem atual <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i></a>{% endif %}
+                            {% for error in form.profile_photo.errors %}<p class="errorlist">{{ error }}</p>{% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="button-row end">
+                    <a class="button secondary" href="{% url 'accounts:profile' %}">Cancelar</a>
+                    <button class="button accent" type="submit"><i class="bi bi-floppy" aria-hidden="true"></i> Salvar dados</button>
+                </div>
+            </form>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    (() => {
+        const phoneInput = document.getElementById('id_phone');
+        const photoInput = document.getElementById('id_profile_photo');
+        const photoPreview = document.getElementById('photo-preview');
+        const photoName = document.getElementById('profile-photo-name');
+
+        function formatPhone() {
+            const digits = phoneInput.value.replace(/\D/g, '').slice(0, 11);
+            let value = digits ? `(${digits.slice(0, 2)}` : '';
+            if (digits.length >= 2) value += ')';
+            if (digits.length > 2) value += ` ${digits.slice(2, 7)}`;
+            if (digits.length > 7) value += ` - ${digits.slice(7, 11)}`;
+            phoneInput.value = value;
+        }
+
+        phoneInput.addEventListener('input', formatPhone);
+        formatPhone();
+
+        photoInput.addEventListener('change', () => {
+            const file = photoInput.files[0];
+            photoName.textContent = file ? file.name : 'Nenhuma foto selecionada';
+            if (!file) return;
+            const image = document.createElement('img');
+            image.src = URL.createObjectURL(file);
+            image.alt = 'Pré-visualização da nova foto';
+            image.addEventListener('load', () => URL.revokeObjectURL(image.src), { once: true });
+            photoPreview.replaceChildren(image);
+        });
+    })();
+</script>
+{% endblock %}

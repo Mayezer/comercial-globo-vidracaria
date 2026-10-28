@@ -1,0 +1,12 @@
+<script>
+(() => {
+    const typeField = document.getElementById('id_customer_type');
+    if (!typeField) return;
+    const update = () => document.querySelectorAll('[data-customer-fields]').forEach((section) => {
+        section.hidden = section.dataset.customerFields !== typeField.value;
+    });
+    typeField.addEventListener('change', update);
+    update();
+})();
+</script>
+

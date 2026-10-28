@@ -1,0 +1,36 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}{{ title }} | Painel Globo Vidraçaria{% endblock %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <meta name="robots" content="noindex, nofollow, noarchive">
+{% endblock %}
+
+{% block extrastyle %}
+    {{ block.super }}
+    <link rel="icon" href="{% static 'img/logo_globo.jpeg' %}" type="image/jpeg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/admin_vidracaria.css' %}">
+{% endblock %}
+
+{% block branding %}
+<h1 id="site-name">
+    <a class="globo-admin-brand" href="{% url 'admin:index' %}" aria-label="Ir para o início do Painel Globo Vidraçaria">
+        <img class="globo-admin-logo" src="{% static 'img/logo_globo.jpeg' %}" alt="">
+        <span class="globo-admin-name">
+            <strong>GLOBO</strong>
+            <span>VIDRAÇARIA</span>
+        </span>
+    </a>
+</h1>
+{% endblock %}
+
+{% block nav-global %}
+    <a class="custom-panel-link" href="{% url 'dashboard:home' %}">
+        <span aria-hidden="true">☰</span> Painel de gestão
+    </a>
+{% endblock %}

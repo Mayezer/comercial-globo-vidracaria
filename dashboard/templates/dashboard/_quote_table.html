@@ -1,0 +1,21 @@
+{% if quotes %}
+<div class="admin-table-wrap">
+    <table class="admin-table">
+        <thead><tr><th>Pedido</th><th>Cliente</th><th>Solicitado em</th><th>Status</th><th>Última ação</th><th></th></tr></thead>
+        <tbody>
+            {% for quote in quotes %}
+            <tr>
+                <td><strong>#{{ quote.pk }}</strong></td>
+                <td><a href="{% url 'dashboard:quote_detail' quote.pk %}">{{ quote.customer_name }}</a><br><small>{{ quote.customer_email }}</small></td>
+                <td>{{ quote.requested_at|date:'d/m/Y' }}<br><small>às {{ quote.requested_at|date:'H:i' }}</small></td>
+                <td><span class="status-badge status-{{ quote.status }}">{{ quote.get_status_display }}</span></td>
+                <td>{% if quote.status_updated_by %}{{ quote.status_updated_by.get_full_name|default:quote.status_updated_by.username }}<br><small>{{ quote.status_updated_at|date:'d/m/Y H:i' }}</small>{% else %}<span class="text-muted">Sem ação</span>{% endif %}</td>
+                <td><a class="button secondary small" href="{% url 'dashboard:quote_detail' quote.pk %}">Abrir</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="empty-state"><i class="bi bi-inbox"></i><strong>Nenhum orçamento encontrado.</strong></div>
+{% endif %}

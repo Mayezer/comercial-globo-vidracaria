@@ -1,0 +1,113 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Saída de produtos | Painel Globo{% endblock %}
+
+{% block extra_head %}
+{{ block.super }}
+<style>
+    .stock-summary { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; margin-bottom: 1rem; }
+    .stock-summary-card { padding: 1rem 1.15rem; background: var(--surface); border: 1px solid var(--border); border-top: 4px solid var(--brand); border-radius: 1rem; box-shadow: var(--shadow-sm); }
+    .stock-summary-card span { display: block; color: var(--muted); font-size: .8rem; font-weight: 750; }
+    .stock-summary-card strong { display: block; margin-top: .3rem; font-size: 1.75rem; }
+    .stock-page-layout { display: grid; grid-template-columns: minmax(320px, .8fr) minmax(0, 1.2fr); gap: 1rem; align-items: start; }
+    .stock-form-card .card-body { padding: 1.2rem; }
+    .stock-exit-form { display: grid; gap: 1rem; }
+    .stock-exit-form input, .stock-exit-form select { width: 100%; min-height: 48px; padding: .72rem .85rem; color: var(--ink); background: var(--surface); border: 1.5px solid var(--border); border-radius: .72rem; }
+    .stock-exit-form .button { width: 100%; justify-content: center; }
+    .stock-current-list { max-height: 390px; overflow: auto; }
+    .stock-current-list .admin-table thead th { position: sticky; top: 0; z-index: 1; }
+    .stock-history { margin-top: 1rem; }
+    @media (max-width: 860px) { .stock-page-layout { grid-template-columns: 1fr; } }
+    @media (max-width: 520px) { .stock-summary { grid-template-columns: 1fr; } }
+</style>
+{% endblock %}
+
+{% block dashboard_content %}
+<header class="dashboard-heading">
+    <div>
+        <p class="eyebrow"><i class="bi bi-box-arrow-up-right"></i> Controle de estoque</p>
+        <h1>Saída de produtos</h1>
+        <p>Registre a quantidade retirada e acompanhe o saldo de cada produto.</p>
+    </div>
+    <a class="button secondary" href="{% url 'dashboard:product_list' %}"><i class="bi bi-arrow-left"></i> Voltar aos produtos</a>
+</header>
+
+<section class="stock-summary" aria-label="Resumo do estoque">
+    <article class="stock-summary-card"><span>Produtos cadastrados</span><strong>{{ products|length }}</strong></article>
+    <article class="stock-summary-card"><span>Total de unidades em estoque</span><strong>{{ total_stock }}</strong></article>
+</section>
+
+<div class="stock-page-layout">
+    <section class="card stock-form-card" aria-labelledby="stock-exit-form-title">
+        <header class="card-header"><h2 id="stock-exit-form-title">Registrar nova saída</h2><p>A quantidade será descontada do estoque atual.</p></header>
+        <div class="card-body">
+            <form method="post" class="stock-exit-form" novalidate>
+                {% csrf_token %}
+                {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+                {% for field in form %}
+                    <div class="form-field">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.help_text %}<span class="helptext">{{ field.help_text }}</span>{% endif %}
+                        {% for error in field.errors %}<p class="errorlist">{{ error }}</p>{% endfor %}
+                    </div>
+                {% endfor %}
+                <button class="button" type="submit"><i class="bi bi-check2-circle"></i> Confirmar saída</button>
+            </form>
+        </div>
+    </section>
+
+    <section class="admin-panel" aria-labelledby="current-stock-title">
+        <header class="admin-panel-head"><h2 id="current-stock-title">Estoque atual</h2><span>Atualizado em tempo real</span></header>
+        {% if products %}
+            <div class="admin-table-wrap stock-current-list">
+                <table class="admin-table">
+                    <thead><tr><th>Produto</th><th>Categoria</th><th>Disponível</th></tr></thead>
+                    <tbody>
+                        {% for product in products %}
+                            <tr>
+                                <td><strong>{{ product.name }}</strong></td>
+                                <td>{{ product.category.name }}</td>
+                                <td>
+                                    {% if product.stock_quantity %}
+                                        <span class="status-badge status-completed">{{ product.stock_quantity }} un.</span>
+                                    {% else %}
+                                        <span class="status-badge status-cancelled">Sem estoque</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="empty-state"><i class="bi bi-box-seam"></i><strong>Nenhum produto cadastrado.</strong><p>Cadastre um produto antes de registrar saídas.</p></div>
+        {% endif %}
+    </section>
+</div>
+
+<section class="admin-panel stock-history" aria-labelledby="stock-history-title">
+    <header class="admin-panel-head"><div><h2 id="stock-history-title">Histórico de saídas</h2><small>As 100 movimentações mais recentes.</small></div></header>
+    {% if stock_exits %}
+        <div class="admin-table-wrap">
+            <table class="admin-table">
+                <thead><tr><th>Data</th><th>Produto</th><th>Quantidade</th><th>Saldo</th><th>Responsável</th><th>Observação</th></tr></thead>
+                <tbody>
+                    {% for stock_exit in stock_exits %}
+                        <tr>
+                            <td>{{ stock_exit.created_at|date:'d/m/Y H:i' }}</td>
+                            <td><strong>{{ stock_exit.product_name }}</strong></td>
+                            <td><strong>-{{ stock_exit.quantity }}</strong> un.</td>
+                            <td>{{ stock_exit.stock_before }} → {{ stock_exit.stock_after }}</td>
+                            <td>{{ stock_exit.created_by.get_full_name|default:stock_exit.created_by.username|default:'Conta removida' }}</td>
+                            <td>{{ stock_exit.notes|default:'Sem observação' }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="empty-state"><i class="bi bi-clock-history"></i><strong>Nenhuma saída registrada.</strong><p>As movimentações aparecerão aqui após a primeira baixa.</p></div>
+    {% endif %}
+</section>
+{% endblock %}

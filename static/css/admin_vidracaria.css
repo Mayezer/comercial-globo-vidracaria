@@ -1,0 +1,210 @@
+:root,
+html[data-theme="light"],
+html[data-theme="auto"] {
+    /* Cores principais - Tons de azul/vidro e cinza chumbo */
+    --primary: #02c712;        /* Azul moderno (Botões e Destaques) */
+    --secondary: #0f2a21;      /* Azul/Cinza muito escuro para o cabeçalho */
+    --accent: #38f898;
+    --primary-fg: #ffffff;     /* Texto claro sobre fundo escuro */
+    --body-fg: #17221e;
+    --body-quiet-color: #475569;
+    --body-medium-color: #26362f;
+    --body-loud-color: #0f1f18;
+    --header-color: #ffffff;
+    --header-branding-color: #ffffff;
+    --header-bg: var(--secondary);
+    --header-link-color: #ffffff;
+    --breadcrumbs-fg: #dfffee;
+    --breadcrumbs-link-fg: #ffffff;
+    --breadcrumbs-bg: #174b39;
+    --link-fg: #087b30;
+    --link-hover-color: #046323;
+    --link-selected-fg: #054c1d;
+    --hairline-color: #d4ded9;
+    --border-color: #b8c8c0;
+    --error-fg: #b42318;
+    --message-success-bg: #dcfce7;
+    --message-warning-bg: #fef3c7;
+    --message-error-bg: #fee2e2;
+    --button-fg: #ffffff;
+    --button-bg: #078f28;
+    --button-hover-bg: #056f20;
+    --default-button-bg: #078f28;
+    --default-button-hover-bg: #056f20;
+    --delete-button-bg: #ba2121;
+    --delete-button-hover-bg: #8f1919;
+    --card-bg: #ffffff;
+    color-scheme: light;
+
+    /* Tipografia global */
+    --body-font-family: 'Inter', sans-serif;
+
+    /* Fundo da página e módulos */
+    --body-bg: #f8fafc;        /* Fundo geral super claro */
+    --darkened-bg: #e2e8f0;    /* Fundo de cabeçalho de tabelas */
+    --selected-bg: #e0f2fe;    /* Azul super claro para seleções */
+    --selected-row: #f0f9ff;   /* Hover em linhas da tabela */
+
+    /* Acabamentos */
+    --border-radius: 8px;      /* Cantos arredondados */
+}
+
+/* Aplicando a fonte globalmente */
+body {
+    font-family: var(--body-font-family);
+    background-color: var(--body-bg);
+    color: var(--body-fg);
+}
+
+/* Mantém o modo escuro coerente quando ele for escolhido manualmente. */
+html[data-theme="dark"] {
+    --primary: #38f898;
+    --secondary: #071a13;
+    --accent: #79ffb7;
+    --primary-fg: #06140e;
+    --body-fg: #eefbf4;
+    --body-bg: #08130f;
+    --body-quiet-color: #afc7ba;
+    --body-medium-color: #d1e4da;
+    --body-loud-color: #ffffff;
+    --header-color: #ffffff;
+    --header-branding-color: #ffffff;
+    --header-bg: #071a13;
+    --header-link-color: #ffffff;
+    --breadcrumbs-fg: #ddffed;
+    --breadcrumbs-link-fg: #ffffff;
+    --breadcrumbs-bg: #0d3d2c;
+    --link-fg: #67ffad;
+    --link-hover-color: #9dffca;
+    --link-selected-fg: #9dffca;
+    --hairline-color: #2a4337;
+    --border-color: #385448;
+    --darkened-bg: #10241b;
+    --selected-bg: #123625;
+    --selected-row: #102d21;
+    --button-fg: #06140e;
+    --button-bg: #38d981;
+    --button-hover-bg: #63f2a6;
+    --default-button-bg: #38d981;
+    --default-button-hover-bg: #63f2a6;
+    --card-bg: #101f18;
+    color-scheme: dark;
+}
+
+/* Cabeçalho e marca do painel. */
+#header {
+    background: var(--secondary);
+    border-bottom: 3px solid var(--accent);
+}
+
+#site-name {
+    margin: 0;
+}
+
+.globo-admin-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--header-branding-color) !important;
+    text-decoration: none;
+}
+
+.globo-admin-logo {
+    width: 66px;
+    height: 40px;
+    display: block;
+    flex: 0 0 auto;
+    border: 2px solid rgba(255, 255, 255, .8);
+    border-radius: 7px;
+    object-fit: contain;
+    background: #fff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, .2);
+}
+
+.globo-admin-name {
+    display: inline-flex;
+    gap: 5px;
+    align-items: baseline;
+    color: #ffffff;
+    letter-spacing: .04em;
+}
+
+.globo-admin-name strong { font-weight: 700; }
+.globo-admin-name span { font-weight: 300; }
+
+.custom-panel-link {
+    min-height: 38px;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 12px;
+    color: #ffffff !important;
+    background: rgba(255, 255, 255, .1);
+    border: 1px solid rgba(255, 255, 255, .3);
+    border-radius: 7px;
+    text-decoration: none;
+    font-weight: 700;
+}
+
+.custom-panel-link:hover {
+    background: rgba(255, 255, 255, .2);
+}
+
+/* Contraste e acabamento da tela de acesso. */
+.login #container {
+    overflow: hidden;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    box-shadow: 0 18px 45px rgba(15, 42, 33, .16);
+}
+
+.login #header {
+    min-height: 72px;
+    padding: 14px 20px;
+}
+
+.login #content {
+    background: var(--card-bg);
+}
+
+.login .form-row label,
+.login .form-row label.required {
+    color: var(--body-medium-color);
+    font-weight: 600;
+}
+
+.login .form-row input {
+    color: var(--body-fg);
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+}
+
+.login .form-row input::placeholder {
+    color: var(--body-quiet-color);
+    opacity: .78;
+}
+
+.login .form-row input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 20%, transparent);
+    outline: none;
+}
+
+.login .submit-row {
+    background: transparent;
+    border: 0;
+}
+
+.login .submit-row input {
+    min-height: 42px;
+    padding: 10px 20px;
+    color: var(--button-fg);
+    background: var(--button-bg);
+    border-radius: 7px;
+    font-weight: 700;
+}
+
+.login .submit-row input:hover {
+    background: var(--button-hover-bg);
+}

@@ -1,0 +1,81 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Cálculo de lucro | Painel Globo{% endblock %}
+
+{% block dashboard_content %}
+<header class="dashboard-heading">
+    <div>
+        <p class="eyebrow"><i class="bi bi-percent"></i> Precificação</p>
+        <h1>Cálculo de lucro</h1>
+        <p>Informe o custo e ajuste a margem para encontrar o preço de venda.</p>
+    </div>
+</header>
+
+<section class="profit-layout">
+    <article class="card profit-card">
+        <div class="form-field">
+            <label for="product-cost">Custo do produto</label>
+            <input id="product-cost" type="text" inputmode="decimal" autocomplete="off" placeholder="0,00" value="100,00">
+            <span class="helptext">Use o valor total pago pelo item.</span>
+        </div>
+        <div class="form-field section-gap">
+            <label for="profit-range">Porcentagem de lucro</label>
+            <div class="profit-range-row">
+                <input class="profit-range" id="profit-range" type="range" min="0" max="100" step="1" value="30">
+                <output class="profit-percentage" id="profit-percentage" for="profit-range">30%</output>
+            </div>
+            <span class="helptext">Deslize entre 0% e 100%.</span>
+        </div>
+    </article>
+
+    <aside class="profit-result" aria-live="polite">
+        <span>Preço sugerido de venda</span>
+        <strong id="sale-price">R$ 130,00</strong>
+        <small>Lucro estimado: <b id="profit-amount">R$ 30,00</b></small>
+    </aside>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+{{ block.super }}
+<script>
+    (() => {
+        const costInput = document.getElementById('product-cost');
+        const range = document.getElementById('profit-range');
+        const percentage = document.getElementById('profit-percentage');
+        const salePrice = document.getElementById('sale-price');
+        const profitAmount = document.getElementById('profit-amount');
+        const currency = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+
+        function parseCost(value) {
+            const normalized = value.trim().replace(/\s/g, '').replace(/\./g, '').replace(',', '.');
+            const parsed = Number(normalized);
+            return Number.isFinite(parsed) && parsed >= 0 ? parsed : 0;
+        }
+
+        function updateResult() {
+            const cost = parseCost(costInput.value);
+            const rate = Number(range.value);
+            const profit = cost * (rate / 100);
+            range.style.setProperty('--range-progress', `${rate}%`);
+            percentage.value = `${rate}%`;
+            percentage.textContent = `${rate}%`;
+            salePrice.textContent = currency.format(cost + profit);
+            profitAmount.textContent = currency.format(profit);
+        }
+
+        function formatCost() {
+            costInput.value = parseCost(costInput.value).toLocaleString('pt-BR', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+            });
+            updateResult();
+        }
+
+        costInput.addEventListener('input', updateResult);
+        costInput.addEventListener('blur', formatCost);
+        range.addEventListener('input', updateResult);
+        updateResult();
+    })();
+</script>
+{% endblock %}

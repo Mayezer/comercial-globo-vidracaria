@@ -1,0 +1,45 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Funcionários | Painel Globo{% endblock %}
+
+{% block dashboard_content %}
+<header class="dashboard-heading">
+    <div>
+        <p class="eyebrow"><i class="bi bi-person-vcard"></i> Equipe</p>
+        <h1>Funcionários</h1>
+        <p>Mantenha os dados cadastrais e salariais da equipe.</p>
+    </div>
+    <a class="button" href="{% url 'dashboard:employee_create' %}"><i class="bi bi-person-plus"></i> Novo funcionário</a>
+</header>
+
+<section class="admin-panel">
+    {% if employees %}
+        <div class="employee-grid">
+            {% for employee in employees %}
+            <article class="employee-card">
+                {% if employee.photo %}
+                    <img src="{{ employee.photo.url }}" alt="Foto de {{ employee.full_name }}">
+                {% else %}
+                    <div class="employee-avatar" aria-hidden="true"><i class="bi bi-person"></i></div>
+                {% endif %}
+                <div class="employee-copy">
+                    <h2>{{ employee.full_name }}</h2>
+                    <p>CPF: {{ employee.formatted_cpf }}</p>
+                    <strong>R$ {{ employee.monthly_salary|floatformat:2 }} <small>por mês</small></strong>
+                </div>
+                <div class="table-actions">
+                    <a class="button small" href="{% url 'dashboard:payroll_create' %}?employee={{ employee.pk }}"><i class="bi bi-file-earmark-person"></i> Gerar folha</a>
+                    <a class="button secondary small" href="{% url 'dashboard:employee_edit' employee.pk %}"><i class="bi bi-pencil"></i> Editar</a>
+                    <form method="post" action="{% url 'dashboard:employee_delete' employee.pk %}" onsubmit="return confirm('Excluir o funcionário {{ employee.full_name|escapejs }}?');">
+                        {% csrf_token %}
+                        <button class="button danger small" type="submit"><i class="bi bi-trash3"></i> Excluir</button>
+                    </form>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state"><i class="bi bi-person-vcard"></i><strong>Nenhum funcionário cadastrado.</strong></div>
+    {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,17 @@
+{% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+<div class="admin-form">
+    {% include 'sales/_form_field.html' with field=form.customer_type %}
+    <div class="customer-fields" data-customer-fields="registered">
+        {% include 'sales/_form_field.html' with field=form.customer %}
+    </div>
+    <div class="customer-fields" data-customer-fields="walk_in_identified">
+        {% include 'sales/_form_field.html' with field=form.customer_name %}
+        {% include 'sales/_form_field.html' with field=form.customer_document %}
+        {% include 'sales/_form_field.html' with field=form.customer_contact %}
+    </div>
+    {% include 'sales/_form_field.html' with field=form.discount %}
+    {% include 'sales/_form_field.html' with field=form.payment_method %}
+    {% include 'sales/_form_field.html' with field=form.amount_paid %}
+    {% include 'sales/_form_field.html' with field=form.notes %}
+</div>
+

@@ -1,0 +1,36 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Configurações | Painel Globo{% endblock %}
+
+{% block dashboard_content %}
+<header class="dashboard-heading">
+    <div>
+        <p class="eyebrow"><i class="bi bi-sliders"></i> Sistema</p>
+        <h1>Configurações</h1>
+        <p>Defina os dados da empresa e do responsável exibidos nos documentos.</p>
+    </div>
+</header>
+
+<section class="card admin-form-card">
+    <header class="card-header"><h2>Dados institucionais</h2><p>Estas informações serão usadas nas folhas de pagamento.</p></header>
+    <div class="card-body">
+        <form method="post" novalidate>
+            {% csrf_token %}
+            {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+            <div class="admin-form">
+                {% for field in form %}
+                    <div class="form-field">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} <span class="required-mark" aria-hidden="true">*</span>{% endif %}</label>
+                        {{ field }}
+                        {% if field.help_text %}<span class="helptext">{{ field.help_text }}</span>{% endif %}
+                        {% for error in field.errors %}<p class="errorlist">{{ error }}</p>{% endfor %}
+                    </div>
+                {% endfor %}
+            </div>
+            <div class="button-row end">
+                <button class="button" type="submit"><i class="bi bi-floppy"></i> Salvar configurações</button>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}

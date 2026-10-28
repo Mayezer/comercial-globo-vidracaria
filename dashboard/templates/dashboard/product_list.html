@@ -1,0 +1,80 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Produtos | Painel Globo{% endblock %}
+
+{% block dashboard_content %}
+<header class="dashboard-heading">
+    <div>
+        <p class="eyebrow"><i class="bi bi-box-seam"></i> Catálogo</p>
+        <h1>Produtos</h1>
+        <p>Cadastre produtos, acompanhe o estoque e organize a vitrine por categorias.</p>
+    </div>
+    <div class="button-row">
+        <a class="button secondary" href="{% url 'dashboard:product_stock_exit' %}"><i class="bi bi-box-arrow-up-right"></i> Registrar saída</a>
+        <a class="button" href="{% url 'dashboard:product_create' %}"><i class="bi bi-plus-lg"></i> Novo produto</a>
+    </div>
+</header>
+
+<section class="admin-panel">
+    <header class="admin-panel-head"><h2>Produtos cadastrados</h2><span>{{ products|length }} item{{ products|length|pluralize }}</span></header>
+    {% if products %}
+        <div class="admin-table-wrap">
+            <table class="admin-table">
+                <thead><tr><th>Produto</th><th>Categoria</th><th>Estoque</th><th>Preço interno</th><th>Vitrine do cliente</th><th>Descrição</th><th>Ações</th></tr></thead>
+                <tbody>
+                    {% for product in products %}
+                    <tr>
+                        <td><strong>{{ product.name }}</strong></td>
+                        <td>{{ product.category.name }}</td>
+                        <td><strong>{{ product.stock_quantity }}</strong> un.</td>
+                        <td>R$ {{ product.price|floatformat:2 }}</td>
+                        <td>
+                            {% if product.show_in_showcase %}
+                                <span class="status-badge status-completed"><i class="bi bi-eye"></i> Visível</span>
+                            {% else %}
+                                <span class="status-badge status-cancelled"><i class="bi bi-eye-slash"></i> Oculto</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ product.description|truncatechars:70|default:'Sem descrição' }}</td>
+                        <td>
+                            <div class="table-actions">
+                                <a class="button secondary small" href="{% url 'dashboard:product_stock_exit' %}?product={{ product.pk }}"><i class="bi bi-box-arrow-up-right"></i> Saída</a>
+                                <a class="button secondary small" href="{% url 'dashboard:product_edit' product.pk %}"><i class="bi bi-pencil"></i> Editar</a>
+                                <form method="post" action="{% url 'dashboard:product_delete' product.pk %}" onsubmit="return confirm('Excluir o produto {{ product.name|escapejs }}?');">
+                                    {% csrf_token %}
+                                    <button class="button danger small" type="submit"><i class="bi bi-trash3"></i> Excluir</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="empty-state"><i class="bi bi-box-seam"></i><strong>Nenhum produto cadastrado.</strong></div>
+    {% endif %}
+</section>
+
+<section class="admin-panel section-gap" id="categorias">
+    <header class="admin-panel-head"><div><h2>Categorias de produtos</h2><small>Crie uma categoria aqui e ela ficará disponível no formulário de produto.</small></div></header>
+    <div class="split-panel">
+        <form method="post" class="compact-form" novalidate>
+            {% csrf_token %}
+            <div class="form-field">
+                <label for="{{ category_form.name.id_for_label }}">{{ category_form.name.label }}</label>
+                {{ category_form.name }}
+                {% for error in category_form.name.errors %}<p class="errorlist">{{ error }}</p>{% endfor %}
+            </div>
+            <button class="button" type="submit"><i class="bi bi-folder-plus"></i> Cadastrar categoria</button>
+        </form>
+        <div class="category-list" aria-label="Categorias cadastradas">
+            {% for category in categories %}
+                <span class="category-chip"><i class="bi bi-tag"></i> {{ category.name }} <small>{{ category.product_count }} produto{{ category.product_count|pluralize }}</small></span>
+            {% empty %}
+                <p class="muted-copy">Nenhuma categoria cadastrada.</p>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

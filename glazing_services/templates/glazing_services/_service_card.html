@@ -1,0 +1,16 @@
+<div class="col-sm-6 col-lg-4">
+    <article class="card catalog-card">
+        {% if service.photo %}
+            <img class="catalog-image" src="{{ service.photo.url }}" alt="Foto de {{ service.name }}">
+        {% else %}
+            <div class="catalog-placeholder" aria-hidden="true"><i class="bi bi-tools"></i></div>
+        {% endif %}
+        <div class="card-body d-flex flex-column gap-3 p-4">
+            <span class="catalog-category">{{ service.service_type }}</span>
+            <h2 class="h5 fw-bold mb-0"><a class="stretched-link text-reset text-decoration-none" href="{% url 'glazing_services:detail' service.pk %}">{{ service.name }}</a></h2>
+            {% if service.description %}
+                <p class="catalog-description">{{ service.description }}</p>
+            {% endif %}
+        </div>
+    </article>
+</div>

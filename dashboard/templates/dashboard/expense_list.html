@@ -1,0 +1,68 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Gestão de gastos | Painel Globo{% endblock %}
+
+{% block dashboard_content %}
+<header class="dashboard-heading">
+    <div>
+        <p class="eyebrow"><i class="bi bi-receipt-cutoff"></i> Financeiro</p>
+        <h1>Gestão de gastos</h1>
+        <p>Controle despesas fixas, perdas, impostos, fretes e compras para estoque.</p>
+    </div>
+    <a class="button" href="{% url 'dashboard:expense_create' %}"><i class="bi bi-plus-lg"></i> Novo gasto</a>
+</header>
+
+<div class="linked-note">
+    <i class="bi bi-arrow-left-right" aria-hidden="true"></i>
+    <p>Cada gasto salvo é lançado automaticamente como saída no caixa e no faturamento mensal.</p>
+</div>
+
+<form class="date-filter" method="get">
+    <div class="form-field">
+        <label for="expense-month">Mês de referência</label>
+        <input id="expense-month" type="month" name="month" value="{{ selected_month_value }}">
+    </div>
+    <div class="form-field">
+        <label for="expense-category">Categoria</label>
+        <select id="expense-category" name="category">
+            <option value="">Todas as categorias</option>
+            {% for value, label in categories %}<option value="{{ value }}"{% if selected_category == value %} selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+    </div>
+    <button class="button secondary" type="submit"><i class="bi bi-search"></i> Consultar</button>
+</form>
+
+<section class="finance-summary" aria-label="Resumo dos gastos">
+    <article class="finance-card expense"><span>Total filtrado</span><strong>R$ {{ expense_total|floatformat:2 }}</strong></article>
+    <article class="finance-card"><span>Quantidade de gastos</span><strong>{{ expenses|length }}</strong></article>
+    <article class="finance-card balance"><span>Competência</span><strong>{{ selected_month|date:'m/Y' }}</strong></article>
+</section>
+
+<section class="admin-panel">
+    <header class="admin-panel-head"><h2>Gastos de {{ selected_month|date:'F \d\e Y'|capfirst }}</h2><span>{{ expenses|length }} registro{{ expenses|length|pluralize }}</span></header>
+    {% if expenses %}
+        <div class="admin-table-wrap">
+            <table class="admin-table">
+                <thead><tr><th>Data</th><th>Categoria</th><th>Descrição</th><th>Fornecedor</th><th>Valor</th><th>Ações</th></tr></thead>
+                <tbody>
+                    {% for expense in expenses %}
+                    <tr>
+                        <td>{{ expense.expense_date|date:'d/m/Y' }}</td>
+                        <td><span class="status-badge status-pending">{{ expense.get_category_display }}</span></td>
+                        <td><strong>{{ expense.description }}</strong>{% if expense.notes %}<br><small>{{ expense.notes|truncatechars:80 }}</small>{% endif %}</td>
+                        <td>{{ expense.supplier.name|default:'—' }}</td>
+                        <td class="money-cell expense">- R$ {{ expense.amount|floatformat:2 }}</td>
+                        <td><div class="table-actions">
+                            <a class="button secondary small" href="{% url 'dashboard:expense_edit' expense.pk %}"><i class="bi bi-pencil"></i> Editar</a>
+                            <form method="post" action="{% url 'dashboard:expense_delete' expense.pk %}" onsubmit="return confirm('Excluir este gasto e sua saída no faturamento?');">{% csrf_token %}<button class="button danger small" type="submit"><i class="bi bi-trash3"></i> Excluir</button></form>
+                        </div></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="empty-state"><i class="bi bi-receipt"></i><strong>Nenhum gasto encontrado.</strong><p>Cadastre uma despesa para iniciar o controle desta competência.</p></div>
+    {% endif %}
+</section>
+{% endblock %}

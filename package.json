@@ -1,0 +1,22 @@
+{
+  "name": "comercial-globo-vidracaria-e-construcao",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "cf-typegen": "wrangler types",
+    "typecheck": "tsc --noEmit",
+    "test:worker": "node --test --experimental-strip-types src/rate-limit.test.ts",
+    "check": "wrangler deploy --dry-run",
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy"
+  },
+  "dependencies": {
+    "@cloudflare/containers": "0.3.7"
+  },
+  "devDependencies": {
+    "@types/node": "26.2.0",
+    "typescript": "5.9.3",
+    "wrangler": "4.125.0"
+  }
+}

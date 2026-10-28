@@ -1,0 +1,84 @@
+{% extends 'showcase/base.html' %}
+
+{% block title %}{{ product.name }} em {{ product.category.name }} | Globo Vidraçaria{% endblock %}
+{% block meta_description %}{% if product.description %}{{ product.description|striptags|truncatechars:155 }}{% else %}Conheça {{ product.name }} no catálogo de vidros e materiais para construção da Globo Vidraçaria.{% endif %}{% endblock %}
+{% block og_type %}product{% endblock %}
+{% block og_title %}{{ product.name }} | Globo Vidraçaria{% endblock %}
+{% block og_description %}{% if product.description %}{{ product.description|striptags|truncatechars:155 }}{% else %}Veja informações sobre {{ product.name }} e fale com a equipe da Globo Vidraçaria.{% endif %}{% endblock %}
+{% block og_image %}{% if product.photo %}{{ public_site_url }}{{ product.photo.url }}{% else %}{{ block.super }}{% endif %}{% endblock %}
+
+{% block extra_head %}
+<style>
+    .product-detail {
+        overflow: hidden;
+        border: 0;
+        border-radius: 1.25rem;
+        box-shadow: 0 18px 52px rgba(6, 75, 43, .14);
+    }
+    .detail-media,
+    .detail-placeholder {
+        width: 100%;
+        min-height: 420px;
+        height: 100%;
+    }
+    .detail-media { display: block; object-fit: cover; }
+    .detail-placeholder {
+        display: grid;
+        place-items: center;
+        color: var(--primary-color);
+        background: linear-gradient(145deg, rgba(8, 120, 62, .09), rgba(247, 198, 0, .14));
+        font-size: 5rem;
+    }
+    .detail-category {
+        display: inline-flex;
+        padding: .35rem .72rem;
+        color: var(--primary-color);
+        background: rgba(8, 120, 62, .1);
+        border-radius: 99px;
+        font-size: .8rem;
+        font-weight: 800;
+    }
+    .detail-price {
+        color: var(--primary-color);
+        font-size: clamp(1.8rem, 5vw, 2.4rem);
+        font-weight: 850;
+        letter-spacing: -.03em;
+    }
+    .detail-description { white-space: pre-line; }
+    @media (max-width: 767.98px) {
+        .detail-media,
+        .detail-placeholder { min-height: 300px; height: 300px; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<nav aria-label="Navegação estrutural" class="mb-4">
+    <a class="text-decoration-none fw-semibold" href="{% url 'products:list' %}">
+        <i class="bi bi-arrow-left me-1" aria-hidden="true"></i> Voltar para produtos
+    </a>
+</nav>
+
+<article class="card product-detail">
+    <div class="row g-0">
+        <div class="col-md-6">
+            {% if product.photo %}
+                <img class="detail-media" src="{{ product.photo.url }}" alt="Foto de {{ product.name }}">
+            {% else %}
+                <div class="detail-placeholder" aria-hidden="true"><i class="bi bi-image"></i></div>
+            {% endif %}
+        </div>
+        <div class="col-md-6">
+            <div class="card-body d-flex flex-column justify-content-center h-100 p-4 p-lg-5">
+                <span class="detail-category mb-3">{{ product.category.name }}</span>
+                <h1 class="display-6 fw-bold mb-3">{{ product.name }}</h1>
+                {% if product.description %}
+                    <div class="detail-description text-body-secondary">{{ product.description }}</div>
+                {% else %}
+                    <p class="text-body-secondary mb-0">Entre em contato com nossa equipe para saber mais sobre este produto.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</article>
+{% endblock %}

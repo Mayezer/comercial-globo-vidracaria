@@ -1,0 +1,38 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}{% if administrator %}Editar{% else %}Novo{% endif %} administrador | Painel Globo{% endblock %}
+
+{% block dashboard_content %}
+<header class="dashboard-heading">
+    <div>
+        <p class="eyebrow"><i class="bi bi-person-{% if administrator %}gear{% else %}plus{% endif %}"></i> Acesso ao painel</p>
+        <h1>{% if administrator %}Editar administrador{% else %}Novo administrador{% endif %}</h1>
+        <p>{% if administrator %}Atualize os dados, o status da conta ou defina uma nova senha.{% else %}A nova conta poderá gerenciar clientes, catálogo e orçamentos.{% endif %}</p>
+    </div>
+    <a class="button secondary" href="{% url 'dashboard:administrator_list' %}"><i class="bi bi-arrow-left"></i> Voltar</a>
+</header>
+
+<section class="card admin-form-card">
+    <header class="card-header"><h2>Dados de acesso</h2></header>
+    <div class="card-body">
+        <form method="post" novalidate>
+            {% csrf_token %}
+            {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+            <div class="admin-form">
+                {% for field in form %}
+                    <div class="form-field">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.help_text %}<span class="helptext">{{ field.help_text }}</span>{% endif %}
+                        {% for error in field.errors %}<p class="errorlist">{{ error }}</p>{% endfor %}
+                    </div>
+                {% endfor %}
+            </div>
+            <div class="button-row end">
+                <a class="button secondary" href="{% url 'dashboard:administrator_list' %}">Cancelar</a>
+                <button class="button" type="submit"><i class="bi bi-person-check"></i> {% if administrator %}Salvar alterações{% else %}Criar administrador{% endif %}</button>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}

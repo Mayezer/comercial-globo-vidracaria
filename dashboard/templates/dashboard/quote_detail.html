@@ -1,0 +1,88 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Orçamento #{{ quote.pk }} | Painel Globo{% endblock %}
+
+{% block extra_head %}
+{{ block.super }}
+<style>
+    .quote-layout { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(280px, .75fr); gap: 1.2rem; align-items: start; }
+    .quote-section { padding: 1.2rem; }
+    .quote-section + .quote-section { border-top: 1px solid var(--border); }
+    .quote-section h2 { display: flex; align-items: center; gap: .5rem; margin: 0 0 1rem; color: var(--brand); font-size: 1.05rem; }
+    .data-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+    .data-item.full { grid-column: 1 / -1; }
+    .data-item span { display: block; margin-bottom: .2rem; color: var(--muted); font-size: .7rem; font-weight: 850; letter-spacing: .07em; text-transform: uppercase; }
+    .data-item strong { overflow-wrap: anywhere; }
+    .selection-list { display: flex; flex-wrap: wrap; gap: .45rem; margin: 0; padding: 0; list-style: none; }
+    .selection-list li { padding: .4rem .65rem; color: var(--brand); background: var(--brand-soft); border-radius: 999px; font-size: .82rem; font-weight: 750; }
+    .status-actions { display: grid; gap: .65rem; }
+    .status-actions form, .status-actions button { width: 100%; }
+    .status-button { min-height: 46px; display: flex; align-items: center; justify-content: center; gap: .5rem; padding: .65rem; border: 0; border-radius: .7rem; cursor: pointer; font-weight: 850; }
+    .status-button.pending { color: #3b2b00; background: #ffcc29; }
+    .status-button.completed { color: #fff; background: #08783e; }
+    .status-button.cancelled { color: #fff; background: #c7323f; }
+    .history-list { display: grid; gap: .8rem; margin: 0; padding: 0; list-style: none; }
+    .history-list li { padding-left: .85rem; border-left: 3px solid var(--brand); }
+    .history-list small { display: block; color: var(--muted); }
+    @media (max-width: 850px) { .quote-layout { grid-template-columns: 1fr; } }
+    @media (max-width: 520px) { .data-grid { grid-template-columns: 1fr; } .data-item.full { grid-column: auto; } }
+</style>
+{% endblock %}
+
+{% block dashboard_content %}
+<header class="dashboard-heading">
+    <div><p class="eyebrow"><i class="bi bi-file-earmark-check"></i> Solicitação #{{ quote.pk }}</p><h1>{{ quote.customer_name }}</h1><p>Enviado em {{ quote.requested_at|date:'d/m/Y' }} às {{ quote.requested_at|date:'H:i' }}.</p></div>
+    <a class="button secondary" href="{% url 'dashboard:quote_list' %}"><i class="bi bi-arrow-left"></i> Voltar</a>
+</header>
+
+<div class="quote-layout">
+    <div class="admin-panel">
+        <section class="quote-section">
+            <h2><i class="bi bi-person-vcard"></i> Dados do cliente</h2>
+            <div class="data-grid">
+                <div class="data-item"><span>Nome / razão social</span><strong>{{ quote.customer_name }}</strong></div>
+                <div class="data-item"><span>Tipo de pessoa</span><strong>{% if quote.customer_account_type == 'PJ' %}Pessoa jurídica{% else %}Pessoa física{% endif %}</strong></div>
+                <div class="data-item"><span>CPF / CNPJ</span><strong>{{ quote.formatted_customer_document }}</strong></div>
+                <div class="data-item"><span>Telefone</span><strong>{{ quote.formatted_customer_phone|default:'Não informado' }}</strong></div>
+                <div class="data-item full"><span>E-mail</span><strong>{{ quote.customer_email }}</strong></div>
+                <div class="data-item full"><span>Endereço</span><strong>{{ quote.full_address }}</strong></div>
+            </div>
+            <div class="button-row">
+                {% if quote.whatsapp_url %}<a class="button" href="{{ quote.whatsapp_url }}" target="_blank" rel="noopener"><i class="bi bi-whatsapp"></i> WhatsApp do cliente</a>{% else %}<span class="button secondary" aria-disabled="true"><i class="bi bi-whatsapp"></i> Telefone não informado</span>{% endif %}
+                {% if quote.customer %}<a class="button secondary" href="{% url 'dashboard:customer_edit' quote.customer.pk %}"><i class="bi bi-pencil"></i> Editar cliente</a>{% endif %}
+            </div>
+        </section>
+        <section class="quote-section">
+            <h2><i class="bi bi-bag-check"></i> Itens solicitados</h2>
+            <p><strong>Produtos</strong></p>
+            <ul class="selection-list">{% for product in quote.products.all %}<li>{{ product.name }}</li>{% empty %}<li>Nenhum produto específico</li>{% endfor %}</ul>
+            <p><strong>Serviços</strong></p>
+            <ul class="selection-list">{% for service in quote.services.all %}<li>{{ service.name }}</li>{% empty %}<li>Nenhum serviço específico</li>{% endfor %}</ul>
+        </section>
+        <section class="quote-section">
+            <h2><i class="bi bi-chat-left-text"></i> Detalhes informados</h2>
+            <p style="white-space: pre-wrap; margin-bottom: 0;">{{ quote.details|default:'O cliente não acrescentou observações.' }}</p>
+        </section>
+    </div>
+
+    <aside class="admin-panel">
+        <section class="quote-section">
+            <h2><i class="bi bi-toggles"></i> Atualizar status</h2>
+            <p>Status atual: <span class="status-badge status-{{ quote.status }}">{{ quote.get_status_display }}</span></p>
+            <div class="status-actions">
+                <form method="post" action="{% url 'dashboard:update_quote_status' quote.pk %}">{% csrf_token %}<input type="hidden" name="status" value="completed"><button class="status-button completed" type="submit"><i class="bi bi-check2-circle"></i> Concluir</button></form>
+                <form method="post" action="{% url 'dashboard:update_quote_status' quote.pk %}">{% csrf_token %}<input type="hidden" name="status" value="pending"><button class="status-button pending" type="submit"><i class="bi bi-hourglass-split"></i> Pendente</button></form>
+                <form method="post" action="{% url 'dashboard:update_quote_status' quote.pk %}">{% csrf_token %}<input type="hidden" name="status" value="cancelled"><button class="status-button cancelled" type="submit"><i class="bi bi-x-circle"></i> Cancelar</button></form>
+            </div>
+        </section>
+        <section class="quote-section">
+            <h2><i class="bi bi-clock-history"></i> Histórico de ações</h2>
+            <ul class="history-list">
+                {% for action in quote.status_history.all %}
+                    <li><strong>{{ action.get_status_display }}</strong><small>por {{ action.admin.get_full_name|default:action.admin.username|default:'Administrador removido' }}</small><small>{{ action.changed_at|date:'d/m/Y' }} às {{ action.changed_at|date:'H:i' }}</small></li>
+                {% empty %}<li><strong>Aguardando atendimento</strong><small>Nenhum administrador alterou o status.</small></li>{% endfor %}
+            </ul>
+        </section>
+    </aside>
+</div>
+{% endblock %}

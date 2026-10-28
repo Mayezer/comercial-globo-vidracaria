@@ -1,0 +1,194 @@
+{% extends 'base.html' %}
+
+{% block title %}Criar conta | Globo Vidraçaria{% endblock %}
+
+{% block extra_head %}
+<style>
+    .register-wrap { width: min(100%, 850px); margin-inline: auto; }
+    .register-intro { margin-bottom: 1.5rem; text-align: center; }
+    .register-intro .page-subtitle { margin-inline: auto; }
+    .register-card { display: grid; grid-template-columns: 250px minmax(0, 1fr); }
+    .register-side {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 2.25rem 1.75rem;
+        overflow: hidden;
+        color: #fff;
+        background: linear-gradient(155deg, #063c26, #0b7a41);
+    }
+    .register-side::after { content: ''; position: absolute; right: -70px; bottom: -70px; width: 190px; height: 190px; border: 28px solid rgba(255,255,255,.09); border-radius: 50%; }
+    .register-side > * { position: relative; z-index: 1; }
+    .register-side h2 { margin: .9rem 0 .55rem; font-size: 1.7rem; line-height: 1.12; letter-spacing: -.03em; }
+    .register-side p { margin: 0; color: rgba(255,255,255,.76); font-size: .9rem; }
+    .step-list { display: grid; gap: .9rem; margin: 2rem 0; padding: 0; list-style: none; }
+    .step-list li { display: flex; align-items: center; gap: .65rem; font-size: .82rem; font-weight: 700; }
+    .step-list span { width: 28px; height: 28px; display: grid; place-items: center; flex: 0 0 auto; background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.25); border-radius: 50%; }
+    .register-form { padding: clamp(1.5rem, 5vw, 2.7rem); }
+    .register-form h1 { margin: 0 0 .3rem; font-size: 1.55rem; letter-spacing: -.025em; }
+    .register-form > p { margin: 0 0 1.5rem; color: var(--muted); font-size: .9rem; }
+    .register-form form { display: grid; gap: 1rem; }
+    .register-form .button { width: 100%; margin-top: .35rem; }
+    .account-login { margin: 1.3rem 0 0; color: var(--muted); text-align: center; font-size: .88rem; }
+    .account-login a { font-weight: 800; text-decoration: none; }
+    @media (max-width: 720px) {
+        .register-card { grid-template-columns: 1fr; }
+        .register-side { padding: 1.5rem; }
+        .step-list { grid-template-columns: repeat(3, 1fr); margin: 1.25rem 0 0; }
+        .step-list li { align-items: flex-start; flex-direction: column; }
+        .register-side > p:last-child { display: none; }
+    }
+    @media (max-width: 440px) { .step-list { display: none; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="register-wrap">
+    <header class="register-intro">
+        <p class="eyebrow"><i class="bi bi-person-plus" aria-hidden="true"></i> Novo cliente</p>
+        <h1 class="page-title">Crie sua conta</h1>
+        <p class="page-subtitle">Leva só alguns minutos para começar.</p>
+    </header>
+
+    <section class="card register-card" aria-labelledby="register-title">
+        <aside class="register-side">
+            <div>
+                <i class="bi bi-stars" aria-hidden="true" style="font-size: 1.5rem;"></i>
+                <h2>Bem-vindo à Globo.</h2>
+                <p>Informe seus dados de acesso. Você poderá completar o perfil depois.</p>
+                <ol class="step-list">
+                    <li><span>1</span> Tipo de conta</li>
+                    <li><span>2</span> Identificação</li>
+                    <li><span>3</span> Acesso seguro</li>
+                </ol>
+            </div>
+            <p><i class="bi bi-shield-lock" aria-hidden="true"></i> Seus dados ficam protegidos.</p>
+        </aside>
+
+        <div class="register-form">
+            <h1 id="register-title">Dados de acesso</h1>
+            <p>Preencha os campos abaixo para continuar.</p>
+
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger" role="alert">
+                    <i class="bi bi-exclamation-circle-fill" aria-hidden="true"></i>
+                    <div>{{ form.non_field_errors }}</div>
+                </div>
+            {% endif %}
+
+            <form method="post" novalidate>
+                {% csrf_token %}
+
+                <div class="form-field">
+                    <span class="field-label">{{ form.account_type.label }} <span class="required-mark" aria-hidden="true">*</span></span>
+                    {{ form.account_type }}
+                    {% for error in form.account_type.errors %}<p class="errorlist">{{ error }}</p>{% endfor %}
+                </div>
+
+                <div class="form-field" id="document-field"{% if not form.account_type.value %} hidden{% endif %}>
+                    <label id="document-label" for="{{ form.document.id_for_label }}">
+                        {% if form.account_type.value == 'PF' %}CPF{% elif form.account_type.value == 'PJ' %}CNPJ{% else %}CPF ou CNPJ{% endif %}
+                        <span class="required-mark" aria-hidden="true">*</span>
+                    </label>
+                    {{ form.document }}
+                    {% for error in form.document.errors %}<p class="errorlist">{{ error }}</p>{% endfor %}
+                </div>
+
+                <div class="form-field">
+                    <label for="{{ form.email.id_for_label }}">{{ form.email.label }} <span class="required-mark" aria-hidden="true">*</span></label>
+                    {{ form.email }}
+                    {% if form.email.help_text %}<span class="helptext">{{ form.email.help_text }}</span>{% endif %}
+                    {% for error in form.email.errors %}<p class="errorlist">{{ error }}</p>{% endfor %}
+                </div>
+
+                {% for field in form %}
+                    {% if field.name == 'password' or field.name == 'password_confirmation' %}
+                        <div class="form-field">
+                            <label for="{{ field.id_for_label }}">{{ field.label }} <span class="required-mark" aria-hidden="true">*</span></label>
+                            <div class="password-field">
+                                {{ field }}
+                                <button class="password-toggle" type="button" data-password-toggle="{{ field.id_for_label }}" aria-label="Mostrar {{ field.label|lower }}">
+                                    <i class="bi bi-eye" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                            {% if field.help_text %}<span class="helptext">{{ field.help_text|safe }}</span>{% endif %}
+                            {% for error in field.errors %}<p class="errorlist">{{ error }}</p>{% endfor %}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+
+                <button class="button" type="submit">
+                    Criar minha conta <i class="bi bi-arrow-right" aria-hidden="true"></i>
+                </button>
+            </form>
+
+            <p class="account-login">Já possui uma conta? <a href="{% url 'accounts:login' %}">Entrar agora</a></p>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    (() => {
+        const typeOptions = document.querySelectorAll('input[name="account_type"]');
+        const documentField = document.getElementById('document-field');
+        const documentInput = document.getElementById('id_document');
+        const documentLabel = document.getElementById('document-label');
+
+        function formatCpf(digits) {
+            let value = digits.slice(0, 3);
+            if (digits.length > 3) value += `.${digits.slice(3, 6)}`;
+            if (digits.length > 6) value += `.${digits.slice(6, 9)}`;
+            if (digits.length > 9) value += `-${digits.slice(9, 11)}`;
+            return value;
+        }
+
+        function formatCnpj(digits) {
+            let value = digits.slice(0, 2);
+            if (digits.length > 2) value += `.${digits.slice(2, 5)}`;
+            if (digits.length > 5) value += `.${digits.slice(5, 8)}`;
+            if (digits.length > 8) value += `/${digits.slice(8, 12)}`;
+            if (digits.length > 12) value += `-${digits.slice(12, 14)}`;
+            return value;
+        }
+
+        function selectedType() {
+            return document.querySelector('input[name="account_type"]:checked')?.value;
+        }
+
+        function formatDocument() {
+            const type = selectedType();
+            const digits = documentInput.value.replace(/\D/g, '').slice(0, type === 'PF' ? 11 : 14);
+            documentInput.value = type === 'PF' ? formatCpf(digits) : formatCnpj(digits);
+        }
+
+        function updateDocumentField() {
+            const type = selectedType();
+            documentField.hidden = !type;
+            documentInput.required = Boolean(type);
+            if (!type) return;
+            const isIndividual = type === 'PF';
+            documentLabel.firstChild.textContent = isIndividual ? 'CPF ' : 'CNPJ ';
+            documentInput.placeholder = isIndividual ? '000.000.000-00' : '00.000.000/0000-00';
+            documentInput.maxLength = isIndividual ? 14 : 18;
+            formatDocument();
+        }
+
+        typeOptions.forEach((option) => option.addEventListener('change', updateDocumentField));
+        documentInput.addEventListener('input', formatDocument);
+        updateDocumentField();
+
+        document.querySelectorAll('[data-password-toggle]').forEach((button) => {
+            button.addEventListener('click', () => {
+                const input = document.getElementById(button.dataset.passwordToggle);
+                const showPassword = input.type === 'password';
+                input.type = showPassword ? 'text' : 'password';
+                button.setAttribute('aria-label', showPassword ? 'Ocultar senha' : 'Mostrar senha');
+                button.querySelector('i').className = showPassword ? 'bi bi-eye-slash' : 'bi bi-eye';
+            });
+        });
+    })();
+</script>
+{% endblock %}

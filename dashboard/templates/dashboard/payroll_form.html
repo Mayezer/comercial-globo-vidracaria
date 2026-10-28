@@ -1,0 +1,38 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}{% if payroll %}Editar{% else %}Nova{% endif %} folha de pagamento | Painel Globo{% endblock %}
+
+{% block dashboard_content %}
+<header class="dashboard-heading">
+    <div>
+        <p class="eyebrow"><i class="bi bi-file-earmark-person"></i> Folha de pagamento</p>
+        <h1>{% if payroll %}Editar folha{% else %}Nova folha detalhada{% endif %}</h1>
+        <p>Confira salário-base, acréscimos, descontos e a data que receberá a saída financeira.</p>
+    </div>
+    <a class="button secondary" href="{% url 'dashboard:payroll_list' %}"><i class="bi bi-arrow-left"></i> Voltar</a>
+</header>
+
+<section class="card admin-form-card">
+    <header class="card-header"><h2>Dados da folha</h2></header>
+    <div class="card-body">
+        <form method="post" novalidate>
+            {% csrf_token %}
+            {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+            <div class="admin-form">
+                {% for field in form %}
+                    <div class="form-field">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} <span class="required-mark" aria-hidden="true">*</span>{% endif %}</label>
+                        {{ field }}
+                        {% if field.help_text %}<span class="helptext">{{ field.help_text }}</span>{% endif %}
+                        {% for error in field.errors %}<p class="errorlist">{{ error }}</p>{% endfor %}
+                    </div>
+                {% endfor %}
+            </div>
+            <div class="button-row end">
+                <a class="button secondary" href="{% url 'dashboard:payroll_list' %}">Cancelar</a>
+                <button class="button" type="submit"><i class="bi bi-floppy"></i> Salvar e gerar PDF</button>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Editar cliente | Painel Globo{% endblock %}
+
+{% block dashboard_content %}
+<header class="dashboard-heading">
+    <div><p class="eyebrow"><i class="bi bi-person-gear"></i> Cadastro do cliente</p><h1>Editar informações</h1><p>Atualize dados pessoais, contato, endereço e situação da conta.</p></div>
+    <a class="button secondary" href="{% url 'dashboard:customer_list' %}"><i class="bi bi-arrow-left"></i> Voltar</a>
+</header>
+
+<section class="card admin-form-card">
+    <header class="card-header"><h2>{{ customer.full_name|default:customer.corporate_name|default:customer.email }}</h2><p>Cadastrado em {{ customer.user.date_joined|date:'d/m/Y' }} às {{ customer.user.date_joined|date:'H:i' }}</p></header>
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data" novalidate>
+            {% csrf_token %}
+            {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+            <div class="admin-form">
+                {% for field in form %}
+                <div class="form-field{% if field.name == 'street' or field.name == 'reference_point' or field.name == 'profile_photo' %} full{% endif %}">
+                    {% if field.name == 'is_active' %}<label>{{ field }} {{ field.label }}</label>{% else %}<label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% endif %}
+                    {% if field.help_text %}<span class="helptext">{{ field.help_text }}</span>{% endif %}
+                    {% for error in field.errors %}<p class="errorlist">{{ error }}</p>{% endfor %}
+                </div>
+                {% endfor %}
+            </div>
+            <div class="button-row end"><a class="button secondary" href="{% url 'dashboard:customer_list' %}">Cancelar</a><button class="button" type="submit"><i class="bi bi-floppy"></i> Salvar cliente</button></div>
+        </form>
+    </div>
+</section>
+{% endblock %}

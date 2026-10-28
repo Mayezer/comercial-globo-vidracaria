@@ -1,0 +1,57 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Faturamento mensal | Painel Globo{% endblock %}
+
+{% block dashboard_content %}
+<header class="dashboard-heading">
+    <div>
+        <p class="eyebrow"><i class="bi bi-bar-chart-line"></i> Financeiro</p>
+        <h1>Faturamento mensal</h1>
+        <p>Consolide as entradas e saídas do caixa para conferência contábil.</p>
+    </div>
+    <div class="table-actions">
+        <a class="button secondary" href="{% url 'dashboard:expense_list' %}?month={{ selected_month_value }}"><i class="bi bi-receipt-cutoff"></i> Gerir gastos</a>
+        <a class="button" href="{% url 'dashboard:monthly_finance_pdf' %}?month={{ selected_month_value }}"><i class="bi bi-file-earmark-pdf"></i> Baixar PDF</a>
+    </div>
+</header>
+
+<div class="linked-note"><i class="bi bi-info-circle" aria-hidden="true"></i><p>Gastos mensais e folhas de pagamento aparecem aqui automaticamente como saídas.</p></div>
+
+<form class="date-filter" method="get">
+    <div class="form-field">
+        <label for="finance-month">Mês de referência</label>
+        <input id="finance-month" type="month" name="month" value="{{ selected_month_value }}">
+    </div>
+    <button class="button secondary" type="submit"><i class="bi bi-search"></i> Consultar</button>
+</form>
+
+<section class="finance-summary" aria-label="Resumo mensal">
+    <article class="finance-card income"><span>Entradas do mês</span><strong>R$ {{ income_total|floatformat:2 }}</strong></article>
+    <article class="finance-card expense"><span>Saídas do mês</span><strong>R$ {{ expense_total|floatformat:2 }}</strong></article>
+    <article class="finance-card balance"><span>Resultado mensal</span><strong>R$ {{ balance|floatformat:2 }}</strong></article>
+</section>
+
+<section class="admin-panel">
+    <header class="admin-panel-head"><h2>{{ selected_month|date:'F \d\e Y'|capfirst }}</h2><span>{{ transactions|length }} lançamento{{ transactions|length|pluralize }}</span></header>
+    {% if transactions %}
+        <div class="admin-table-wrap">
+            <table class="admin-table">
+                <thead><tr><th>Data</th><th>Tipo</th><th>Descrição</th><th>Pagamento</th><th>Valor</th></tr></thead>
+                <tbody>
+                    {% for transaction in transactions %}
+                    <tr>
+                        <td>{{ transaction.transaction_date|date:'d/m/Y' }}</td>
+                        <td><span class="transaction-kind {{ transaction.kind }}">{{ transaction.get_kind_display }}</span></td>
+                        <td><strong>{{ transaction.description }}</strong>{% if transaction.notes %}<br><small>{{ transaction.notes|truncatechars:100 }}</small>{% endif %}</td>
+                        <td>{{ transaction.get_payment_method_display }}</td>
+                        <td class="money-cell {{ transaction.kind }}">{% if transaction.kind == 'expense' %}-{% endif %} R$ {{ transaction.amount|floatformat:2 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="empty-state"><i class="bi bi-bar-chart"></i><strong>Nenhum lançamento neste mês.</strong><p>Os lançamentos feitos no caixa diário aparecerão aqui automaticamente.</p></div>
+    {% endif %}
+</section>
+{% endblock %}

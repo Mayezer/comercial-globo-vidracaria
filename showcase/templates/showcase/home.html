@@ -1,0 +1,101 @@
+{% extends 'showcase/base.html' %}
+{% load static %}
+
+{% block title %}Vidraçaria, vidros sob medida e materiais para construção | Globo Vidraçaria{% endblock %}
+{% block meta_description %}Vidros sob medida, box para banheiro, portas, janelas, espelhos, instalação e manutenção de vidros e materiais para construção.{% endblock %}
+{% block og_title %}Globo Vidraçaria | Vidros sob medida e materiais para construção{% endblock %}
+{% block og_description %}Conheça produtos em vidro, alumínio e acrílico e serviços de instalação e manutenção da Globo Vidraçaria.{% endblock %}
+
+{% block main_class %}{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'products/css/catalog.css' %}">
+<style>
+    .home-hero {
+        min-height: min(720px, calc(100vh - 72px));
+        display: grid;
+        align-items: center;
+        color: #fff;
+        background-image:
+            linear-gradient(90deg, rgba(3, 25, 15, .9) 0%, rgba(3, 25, 15, .7) 52%, rgba(3, 25, 15, .28) 100%),
+            var(--showcase-cover);
+        background-position: center;
+        background-size: cover;
+    }
+    .home-hero-copy {
+        max-width: 900px;
+        padding-block: clamp(4rem, 10vw, 8rem);
+        text-shadow: 0 2px 18px rgba(0, 0, 0, .45);
+    }
+    .home-hero-copy p { max-width: 860px; line-height: 1.6; }
+    .featured-products { padding-block: clamp(3.5rem, 7vw, 6rem); }
+    .featured-heading {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    .featured-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: .5rem;
+        margin-bottom: .55rem;
+        color: var(--primary-color);
+        font-size: .78rem;
+        font-weight: 850;
+        letter-spacing: .12em;
+        text-transform: uppercase;
+    }
+    .featured-empty {
+        padding: 3.5rem 1.5rem;
+        text-align: center;
+        border: 1px dashed var(--bs-border-color);
+        border-radius: 1.1rem;
+    }
+    .featured-empty i { color: var(--primary-color); font-size: 2.75rem; }
+    @media (max-width: 767.98px) {
+        .home-hero { min-height: 620px; background-position: 62% center; }
+        .home-hero-copy p { font-size: 1.08rem !important; }
+        .featured-heading { align-items: flex-start; flex-direction: column; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="home-hero" id="inicio" aria-labelledby="home-title">
+    <div class="container">
+        <div class="home-hero-copy">
+            <h1 class="display-3 fw-bold mb-3" id="home-title">Vidraçaria, vidros sob medida e materiais para construção</h1>
+            <p class="lead mb-4 fs-4">Com mais de 25 anos de experiência, trabalhamos com soluções em vidros, alumínios e acrílicos, incluindo box para banheiro, portas e janelas de vidro, espelhos, instalação e manutenção. Unimos beleza, segurança, durabilidade e acabamento profissional.</p>
+            {% if not user.is_staff %}<a class="btn btn-warning btn-lg fw-bold px-4" href="{% url 'dashboard:request_quote' %}"><i class="bi bi-file-earmark-text me-2"></i> Solicitar orçamento</a>{% endif %}
+        </div>
+    </div>
+</section>
+
+<section class="container featured-products" id="produtos" aria-labelledby="featured-title">
+    <header class="featured-heading">
+        <div>
+            <span class="featured-eyebrow"><i class="bi bi-stars" aria-hidden="true"></i> Seleção Globo</span>
+            <h2 class="display-6 fw-bold mb-0" id="featured-title">Produtos em destaque</h2>
+        </div>
+        <a class="btn btn-outline-success fw-semibold" href="{% url 'products:list' %}">
+            Ver todos os produtos <i class="bi bi-arrow-right ms-1" aria-hidden="true"></i>
+        </a>
+    </header>
+
+    {% if featured_products %}
+        <div class="row g-4" aria-label="Produtos em destaque">
+            {% for product in featured_products %}
+                {% include 'products/_product_card.html' %}
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="featured-empty">
+            <i class="bi bi-box-seam" aria-hidden="true"></i>
+            <h3 class="h5 mt-3">Produtos em breve</h3>
+            <p class="text-body-secondary mb-0">Os produtos cadastrados no painel administrativo aparecerão aqui.</p>
+        </div>
+    {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,38 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Clientes | Painel Globo{% endblock %}
+
+{% block dashboard_content %}
+<header class="dashboard-heading">
+    <div><p class="eyebrow"><i class="bi bi-people"></i> Cadastros</p><h1>Clientes</h1><p>Todo novo cadastro aparece aqui para consulta e atualização.</p></div>
+</header>
+
+<form class="search-form" method="get" role="search" style="margin-bottom: 1rem;">
+    <input type="search" name="q" value="{{ query }}" placeholder="Buscar por nome, documento, e-mail ou telefone" aria-label="Buscar clientes">
+    <button class="button small" type="submit"><i class="bi bi-search"></i> Buscar</button>
+</form>
+
+<section class="admin-panel">
+    {% if customers %}
+    <div class="admin-table-wrap">
+        <table class="admin-table">
+            <thead><tr><th>Cliente</th><th>Documento</th><th>Telefone</th><th>Cadastro</th><th>Endereço</th><th>Orçamentos</th><th></th></tr></thead>
+            <tbody>
+                {% for customer in customers %}
+                <tr>
+                    <td><strong>{{ customer.full_name|default:customer.corporate_name|default:'Cliente sem nome' }}</strong><br><small>{{ customer.email }}</small></td>
+                    <td>{{ customer.formatted_document }}</td>
+                    <td>{{ customer.formatted_phone|default:'Não informado' }}</td>
+                    <td>{{ customer.user.date_joined|date:'d/m/Y' }}<br><small>às {{ customer.user.date_joined|date:'H:i' }}</small></td>
+                    <td>{% if customer.has_complete_address %}<span class="status-badge status-completed">Completo</span>{% else %}<span class="status-badge status-pending">Incompleto</span>{% endif %}</td>
+                    <td>{{ customer.quote_count }}</td>
+                    <td><a class="button secondary small" href="{% url 'dashboard:customer_edit' customer.pk %}"><i class="bi bi-pencil"></i> Editar</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}<div class="empty-state"><i class="bi bi-person-x"></i><strong>Nenhum cliente encontrado.</strong></div>{% endif %}
+</section>
+{% include 'dashboard/_pagination.html' %}
+{% endblock %}

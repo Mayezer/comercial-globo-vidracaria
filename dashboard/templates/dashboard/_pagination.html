@@ -1,0 +1,17 @@
+{% if page_obj.has_other_pages %}
+<nav class="pagination" aria-label="Paginação">
+    {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if query %}&q={{ query|urlencode }}{% endif %}" aria-label="Página anterior"><i class="bi bi-chevron-left"></i></a>
+    {% endif %}
+    {% for number in page_obj.paginator.page_range %}
+        {% if number == page_obj.number %}
+            <span class="current" aria-current="page">{{ number }}</span>
+        {% elif number >= page_obj.number|add:'-2' and number <= page_obj.number|add:'2' %}
+            <a href="?page={{ number }}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if query %}&q={{ query|urlencode }}{% endif %}">{{ number }}</a>
+        {% endif %}
+    {% endfor %}
+    {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if query %}&q={{ query|urlencode }}{% endif %}" aria-label="Próxima página"><i class="bi bi-chevron-right"></i></a>
+    {% endif %}
+</nav>
+{% endif %}
